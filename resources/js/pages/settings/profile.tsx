@@ -58,6 +58,21 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                                 </div>
 
                                 <div className="grid gap-2">
+                                    <Label htmlFor="phone_number">Phone number</Label>
+
+                                    <Input
+                                        id="phone_number"
+                                        className="mt-1 block w-full"
+                                        defaultValue={auth.user.phone_number}
+                                        name="phone_number"
+                                        required
+                                        autoComplete="phone_number"
+                                        placeholder="Phone_number"
+                                    />
+
+                                    <InputError className="mt-2" message={errors.phone_number} />
+                                </div>
+                                <div className="grid gap-2">
                                     <Label htmlFor="email">Email address</Label>
 
                                     <Input

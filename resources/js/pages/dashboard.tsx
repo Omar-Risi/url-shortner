@@ -1,13 +1,15 @@
 import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
-import { Head, usePage } from '@inertiajs/react';
+import { Head, usePage, useForm, Link } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Search, Plus, Edit, ExternalLink } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Search, Plus, Edit, ExternalLink, Loader2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -17,11 +19,16 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Dashboard() {
-
     const { urls } = usePage().props;
 
     const [searchQuery, setSearchQuery] = useState('');
     const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+    const [createDialogOpen, setCreateDialogOpen] = useState(false);
+
+    // Form for creating URLs
+    const { data, setData, post, processing, errors, reset, clearErrors } = useForm({
+        original_url: '',
+    });
 
     // Debounce search functionality
     useEffect(() => {
@@ -39,13 +46,34 @@ export default function Dashboard() {
     );
 
     const handleCreateUrl = () => {
-        // Navigate to create URL page - you can implement this with Inertia
-        console.log('Navigate to create URL page');
+        setCreateDialogOpen(true);
     };
 
     const handleEditUrl = (id: number) => {
         // Navigate to edit URL page - you can implement this with Inertia
         console.log('Edit URL with ID:', id);
+    };
+
+    const submitCreateForm = (e: React.FormEvent) => {
+        e.preventDefault();
+
+        post('/api/url/store', {
+            onSuccess: () => {
+                setCreateDialogOpen(false);
+                reset();
+            },
+            onError: () => {
+                // Errors will be handled automatically by Inertia
+            },
+        });
+    };
+
+    const handleDialogOpenChange = (open: boolean) => {
+        setCreateDialogOpen(open);
+        if (!open) {
+            reset();
+            clearErrors();
+        }
     };
 
     return (
@@ -172,31 +200,31 @@ export default function Dashboard() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {filteredUrls.length === 0 ? (
+                                    {urls.data.length === 0 ? (
                                         <TableRow>
                                             <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
                                                 {searchQuery ? 'No URLs found matching your search.' : 'No URLs created yet. Create your first URL!'}
                                             </TableCell>
                                         </TableRow>
                                     ) : (
-                                        filteredUrls.map((url) => (
+                                        urls.data.map((url) => (
                                             <TableRow key={url.id}>
                                                 <TableCell className="font-medium">
                                                     <div className="flex items-center gap-2">
                                                         <ExternalLink className="h-4 w-4 text-muted-foreground" />
                                                         <span className="truncate max-w-md" title={url.originalUrl}>
-                                                            {url.originalUrl}
+                                                            {url.original_url}
                                                         </span>
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>
                                                     <a
-                                                        href={url.shortUrl}
+                                                        href={url.short_code}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         className="text-primary hover:underline"
                                                     >
-                                                        {url.shortUrl}
+                                                        {url.short_code}
                                                     </a>
                                                 </TableCell>
                                                 <TableCell className="text-right font-mono">
@@ -220,6 +248,52 @@ export default function Dashboard() {
                         </div>
                     </CardContent>
                 </Card>
+
+                {/* Create URL Dialog */}
+                <Dialog open={createDialogOpen} onOpenChange={handleDialogOpenChange}>
+                    <DialogContent className="sm:max-w-[425px]">
+                        <form onSubmit={submitCreateForm}>
+                            <DialogHeader>
+                                <DialogTitle>Create Short URL</DialogTitle>
+                                <DialogDescription>
+                                    Enter the original URL you want to shorten.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <div className="grid gap-4 py-4">
+                                <div className="grid gap-2">
+                                    <Label htmlFor="original_url">Original URL</Label>
+                                    <Input
+                                        id="original_url"
+                                        type="url"
+                                        placeholder="https://example.com"
+                                        value={data.original_url}
+                                        onChange={(e) => setData('original_url', e.target.value)}
+                                        required
+                                    />
+                                    {errors.original_url && (
+                                        <p className="text-sm text-red-600">{errors.original_url}</p>
+                                    )}
+                                </div>
+                            </div>
+                            <DialogFooter>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => handleDialogOpenChange(false)}
+                                    disabled={processing}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button type="submit" disabled={processing}>
+                                    {processing && (
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    )}
+                                    Create URL
+                                </Button>
+                            </DialogFooter>
+                        </form>
+                    </DialogContent>
+                </Dialog>
             </div>
         </AppLayout>
     );

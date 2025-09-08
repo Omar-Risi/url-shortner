@@ -9,7 +9,7 @@ class Url extends Model
 {
 
     protected  $fillable = [
-        'url',
+        'original_url',
         'short_code',
         'clicks',
         'user_id',

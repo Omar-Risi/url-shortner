@@ -25,4 +25,11 @@ class Url extends Model
         return $this->belongsTo(User::class);
     }
 
+    /* returns shortened url using code
+     *
+     * @return string
+     */
+    public function shortUrl():string {
+        return route('short', ['short_code' => $this->short_code]);
+    }
 }

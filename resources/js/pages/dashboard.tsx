@@ -1,7 +1,7 @@
 import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -16,35 +16,10 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-// Mock data for the table - you can replace this with your actual data
-const mockUrls = [
-    {
-        id: 1,
-        originalUrl: 'https://www.example.com/very/long/url/that/needs/shortening',
-        shortUrl: 'https://short.ly/abc123',
-        clicks: 1247,
-    },
-    {
-        id: 2,
-        originalUrl: 'https://docs.example.com/documentation/getting-started',
-        shortUrl: 'https://short.ly/def456',
-        clicks: 892,
-    },
-    {
-        id: 3,
-        originalUrl: 'https://blog.example.com/how-to-build-amazing-applications',
-        shortUrl: 'https://short.ly/ghi789',
-        clicks: 634,
-    },
-    {
-        id: 4,
-        originalUrl: 'https://api.example.com/v1/users/profile/settings',
-        shortUrl: 'https://short.ly/jkl012',
-        clicks: 421,
-    },
-];
-
 export default function Dashboard() {
+
+    const { urls } = usePage().props;
+
     const [searchQuery, setSearchQuery] = useState('');
     const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
 
@@ -58,8 +33,8 @@ export default function Dashboard() {
     }, [searchQuery]);
 
     // Filter URLs based on debounced search query
-    const filteredUrls = mockUrls.filter(url =>
-        url.originalUrl.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
+    const filteredUrls = urls.data.filter(url =>
+        url.original_url.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
         url.shortUrl.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
     );
 
@@ -93,6 +68,85 @@ export default function Dashboard() {
                                     className="pl-10"
                                 />
                             </div>
+
+                            {/* Pagination Controls */}
+                            {urls && urls.last_page > 1 && !searchQuery && (
+                                <div className="flex items-center justify-between mt-6">
+                                    <div className="text-sm text-muted-foreground">
+                                        Showing {urls.from || 0} to {urls.to || 0} of {urls.total} results
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                        {/* First Page */}
+                                        <Link
+                                            href={urls.links?.[0]?.url || '#'}
+                                            preserveState
+                                            className={`inline-flex items-center justify-center w-8 h-8 text-sm border rounded ${urls.current_page === 1
+                                                ? 'border-gray-200 text-gray-400 cursor-not-allowed'
+                                                : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                                                }`}
+                                            tabIndex={urls.current_page === 1 ? -1 : undefined}
+                                        >
+                                            <ChevronsLeft className="w-4 h-4" />
+                                        </Link>
+
+                                        {/* Previous Page */}
+                                        <Link
+                                            href={urls.links?.find(link => link.label === '&laquo; Previous')?.url || '#'}
+                                            preserveState
+                                            className={`inline-flex items-center justify-center w-8 h-8 text-sm border rounded ${urls.current_page === 1
+                                                ? 'border-gray-200 text-gray-400 cursor-not-allowed'
+                                                : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                                                }`}
+                                            tabIndex={urls.current_page === 1 ? -1 : undefined}
+                                        >
+                                            <ChevronLeft className="w-4 h-4" />
+                                        </Link>
+
+                                        {/* Page Numbers */}
+                                        {urls.links
+                                            ?.filter(link => !isNaN(Number(link.label)))
+                                            ?.map((link, index) => (
+                                                <Link
+                                                    key={index}
+                                                    href={link.url || '#'}
+                                                    preserveState
+                                                    className={`inline-flex items-center justify-center w-8 h-8 text-sm border rounded ${link.active
+                                                        ? 'border-primary bg-primary text-primary-foreground'
+                                                        : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                                                        }`}
+                                                >
+                                                    {link.label}
+                                                </Link>
+                                            ))}
+
+                                        {/* Next Page */}
+                                        <Link
+                                            href={urls.links?.find(link => link.label === 'Next &raquo;')?.url || '#'}
+                                            preserveState
+                                            className={`inline-flex items-center justify-center w-8 h-8 text-sm border rounded ${urls.current_page === urls.last_page
+                                                ? 'border-gray-200 text-gray-400 cursor-not-allowed'
+                                                : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                                                }`}
+                                            tabIndex={urls.current_page === urls.last_page ? -1 : undefined}
+                                        >
+                                            <ChevronRight className="w-4 h-4" />
+                                        </Link>
+
+                                        {/* Last Page */}
+                                        <Link
+                                            href={urls.links?.[urls.links.length - 1]?.url || '#'}
+                                            preserveState
+                                            className={`inline-flex items-center justify-center w-8 h-8 text-sm border rounded ${urls.current_page === urls.last_page
+                                                ? 'border-gray-200 text-gray-400 cursor-not-allowed'
+                                                : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                                                }`}
+                                            tabIndex={urls.current_page === urls.last_page ? -1 : undefined}
+                                        >
+                                            <ChevronsRight className="w-4 h-4" />
+                                        </Link>
+                                    </div>
+                                </div>
+                            )}
                             <Button onClick={handleCreateUrl} className="whitespace-nowrap">
                                 <Plus className="h-4 w-4 mr-2" />
                                 Create URL

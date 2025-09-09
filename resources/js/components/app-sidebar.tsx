@@ -17,7 +17,7 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Users',
-        href: '/dashboard/users',
+        href: '/users',
         icon: Users,
         admin: true,
     }

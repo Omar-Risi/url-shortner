@@ -28,10 +28,11 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                 )}
             </SidebarMenu>
 
-            {page.props.isAdmin && <SidebarGroupLabel className='mt-4'>Admin management</SidebarGroupLabel>}
+            {/* Admin panel */}
+            {page.props.user.is_admin ? <SidebarGroupLabel className='mt-4'>Admin management</SidebarGroupLabel> : null}
             <SidebarMenu>
                 {items.map((item) =>
-                    item.admin && page.props.isAdmin ? (
+                    item.admin && page.props.user.is_admin ? (
                         <SidebarMenuItem key={item.title}>
                             <SidebarMenuButton
                                 asChild

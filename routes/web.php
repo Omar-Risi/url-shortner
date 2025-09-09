@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\UrlController;
+use App\Http\Controllers\UserController;
 use App\Http\Middleware\AdminMiddleware;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -12,7 +13,7 @@ Route::get('/', function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [UrlController::class, 'index'])->name('dashboard');
 
-    Route::get('/users', [UrlController::class, 'index'])
+    Route::get('/users', [UserController::class, 'index'])
         ->name('users')
         ->middleware(AdminMiddleware::class);
 });

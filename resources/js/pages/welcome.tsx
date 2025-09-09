@@ -20,7 +20,7 @@ export default function Welcome() {
         e.preventDefault();
         setIsLoading(true);
 
-        post('/api/url/store', {
+        post('/', {
             onSuccess: (page) => {
                 // Assuming the response includes the short_code
                 const response = page.props as any;
@@ -80,7 +80,7 @@ export default function Welcome() {
                     </nav>
                 </header>
 
-                <main className="flex w-full max-w-md flex-col items-center space-y-6">
+                <main className="flex flex-1 justify-center w-full max-w-md flex-col items-center space-y-6">
                     <div className="text-center">
                         <h1 className="text-3xl font-semibold text-[#1b1b18] dark:text-[#EDEDEC] mb-2">
                             URL Shortener

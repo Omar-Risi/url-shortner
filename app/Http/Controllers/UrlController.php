@@ -52,4 +52,11 @@ class UrlController extends Controller
 
         return back()->with('successs');
     }
+
+    public function redirect (Request $request, string $short_code) {
+
+        $url = Url::where('short_code', $short_code)->firstOrFail();
+
+        return redirect()->to($url->original_url);
+    }
 }

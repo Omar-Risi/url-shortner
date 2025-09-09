@@ -53,6 +53,19 @@ class UrlController extends Controller
         return back()->with('successs');
     }
 
+    public function delete (Request $request, int $id) {
+
+         $url = Url::findOrFail($id);
+
+        if ($url->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized');
+        }
+
+        $url->delete();
+
+        return back()->with('success', 'URL deleted successfully');
+    }
+
     public function redirect (Request $request, string $short_code) {
 
         $url = Url::where('short_code', $short_code)->firstOrFail();

@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Search, Plus, Edit, ExternalLink, Loader2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { Search, Plus, Edit, ExternalLink, Loader2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Trash2 } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -24,7 +24,9 @@ export default function Dashboard() {
     const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
     const [createDialogOpen, setCreateDialogOpen] = useState(false);
     const [editDialogOpen, setEditDialogOpen] = useState(false);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [editingUrl, setEditingUrl] = useState(null);
+    const [deletingUrl, setDeletingUrl] = useState(null);
 
     // Form for creating URLs
     const { data, setData, post, processing, errors, reset, clearErrors } = useForm({
@@ -43,6 +45,12 @@ export default function Dashboard() {
     } = useForm({
         original_url: '',
     });
+
+    // Form for deleting URLs
+    const {
+        delete: deleteRequest,
+        processing: deleteProcessing,
+    } = useForm();
 
     // Debounce search functionality
     useEffect(() => {
@@ -66,6 +74,11 @@ export default function Dashboard() {
         setEditingUrl(url);
         setEditData('original_url', url.original_url);
         setEditDialogOpen(true);
+    };
+
+    const handleDeleteUrl = (url) => {
+        setDeletingUrl(url);
+        setDeleteDialogOpen(true);
     };
 
     const submitCreateForm = (e: React.FormEvent) => {
@@ -97,6 +110,21 @@ export default function Dashboard() {
         });
     };
 
+    const submitDeleteForm = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!deletingUrl) return;
+
+        deleteRequest(`/api/url/delete/${deletingUrl.id}`, {
+            onSuccess: () => {
+                setDeleteDialogOpen(false);
+                setDeletingUrl(null);
+            },
+            onError: () => {
+                // Errors will be handled automatically by Inertia
+            },
+        });
+    };
+
     const handleCreateDialogOpenChange = (open: boolean) => {
         setCreateDialogOpen(open);
         if (!open) {
@@ -111,6 +139,13 @@ export default function Dashboard() {
             setEditingUrl(null);
             resetEdit();
             clearEditErrors();
+        }
+    };
+
+    const handleDeleteDialogOpenChange = (open: boolean) => {
+        setDeleteDialogOpen(open);
+        if (!open) {
+            setDeletingUrl(null);
         }
     };
 
@@ -264,14 +299,24 @@ export default function Dashboard() {
                                                     {url.clicks.toLocaleString()}
                                                 </TableCell>
                                                 <TableCell className="text-right">
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        onClick={() => handleEditUrl(url)}
-                                                    >
-                                                        <Edit className="h-4 w-4 mr-2" />
-                                                        Edit
-                                                    </Button>
+                                                    <div className="flex gap-2 justify-end">
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={() => handleEditUrl(url)}
+                                                        >
+                                                            <Edit className="h-4 w-4 mr-2" />
+                                                            Edit
+                                                        </Button>
+                                                        <Button
+                                                            variant="destructive"
+                                                            size="sm"
+                                                            onClick={() => handleDeleteUrl(url)}
+                                                        >
+                                                            <Trash2 className="h-4 w-4 mr-2" />
+                                                            Delete
+                                                        </Button>
+                                                    </div>
                                                 </TableCell>
                                             </TableRow>
                                         ))
@@ -376,6 +421,64 @@ export default function Dashboard() {
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                     )}
                                     Update URL
+                                </Button>
+                            </DialogFooter>
+                        </form>
+                    </DialogContent>
+                </Dialog>
+
+                {/* Delete URL Dialog */}
+                <Dialog open={deleteDialogOpen} onOpenChange={handleDeleteDialogOpenChange}>
+                    <DialogContent className="sm:max-w-[425px]">
+                        <form onSubmit={submitDeleteForm}>
+                            <DialogHeader>
+                                <DialogTitle>Delete URL</DialogTitle>
+                                <DialogDescription>
+                                    Are you sure you want to delete this shortened URL? This action cannot be undone.
+                                </DialogDescription>
+                            </DialogHeader>
+                            {deletingUrl && (
+                                <div className="grid gap-4 py-4">
+                                    <div className="p-4 bg-muted rounded-lg">
+                                        <div className="grid gap-2">
+                                            <div className="text-sm font-medium">Original URL:</div>
+                                            <div className="text-sm text-muted-foreground break-all">
+                                                {deletingUrl.original_url}
+                                            </div>
+                                        </div>
+                                        <div className="grid gap-2 mt-3">
+                                            <div className="text-sm font-medium">Shortened URL:</div>
+                                            <div className="text-sm text-muted-foreground">
+                                                {`${window.location.origin}/short/${deletingUrl.short_code}`}
+                                            </div>
+                                        </div>
+                                        <div className="grid gap-2 mt-3">
+                                            <div className="text-sm font-medium">Total Clicks:</div>
+                                            <div className="text-sm text-muted-foreground">
+                                                {deletingUrl.clicks.toLocaleString()}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                            <DialogFooter>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => handleDeleteDialogOpenChange(false)}
+                                    disabled={deleteProcessing}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    type="submit"
+                                    variant="destructive"
+                                    disabled={deleteProcessing}
+                                >
+                                    {deleteProcessing && (
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    )}
+                                    Delete URL
                                 </Button>
                             </DialogFooter>
                         </form>

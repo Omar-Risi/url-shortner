@@ -252,12 +252,12 @@ export default function Dashboard() {
                                                 </TableCell>
                                                 <TableCell>
                                                     <a
-                                                        href={url.short_code}
+                                                        href={`/short/${url.short_code}`}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         className="text-primary hover:underline"
                                                     >
-                                                        {`${window.location.origin}/${url.short_code}`}
+                                                        {`${window.location.origin}/short/${url.short_code}`}
                                                     </a>
                                                 </TableCell>
                                                 <TableCell className="text-right font-mono">

@@ -169,80 +169,6 @@ export default function Dashboard() {
                                     className="pl-10"
                                 />
                             </div>
-                            {/* Pagination Controls */}
-                            {urls && urls.last_page > 1 && !searchQuery && (
-                                <div className="flex items-center justify-between mt-6">
-                                    <div className="text-sm text-muted-foreground">
-                                        Showing {urls.from || 0} to {urls.to || 0} of {urls.total} results
-                                    </div>
-                                    <div className="flex items-center space-x-2">
-                                        {/* First Page */}
-                                        <Link
-                                            href={urls.links?.[0]?.url || '#'}
-                                            preserveState
-                                            className={`inline-flex items-center justify-center w-8 h-8 text-sm border rounded ${urls.current_page === 1
-                                                ? 'border-gray-200 text-gray-400 cursor-not-allowed'
-                                                : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-                                                }`}
-                                            tabIndex={urls.current_page === 1 ? -1 : undefined}
-                                        >
-                                            <ChevronsLeft className="w-4 h-4" />
-                                        </Link>
-                                        {/* Previous Page */}
-                                        <Link
-                                            href={urls.links?.find(link => link.label === '&laquo; Previous')?.url || '#'}
-                                            preserveState
-                                            className={`inline-flex items-center justify-center w-8 h-8 text-sm border rounded ${urls.current_page === 1
-                                                ? 'border-gray-200 text-gray-400 cursor-not-allowed'
-                                                : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-                                                }`}
-                                            tabIndex={urls.current_page === 1 ? -1 : undefined}
-                                        >
-                                            <ChevronLeft className="w-4 h-4" />
-                                        </Link>
-                                        {/* Page Numbers */}
-                                        {urls.links
-                                            ?.filter(link => !isNaN(Number(link.label)))
-                                            ?.map((link, index) => (
-                                                <Link
-                                                    key={index}
-                                                    href={link.url || '#'}
-                                                    preserveState
-                                                    className={`inline-flex items-center justify-center w-8 h-8 text-sm border rounded ${link.active
-                                                        ? 'border-primary bg-primary text-primary-foreground'
-                                                        : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-                                                        }`}
-                                                >
-                                                    {link.label}
-                                                </Link>
-                                            ))}
-                                        {/* Next Page */}
-                                        <Link
-                                            href={urls.links?.find(link => link.label === 'Next &raquo;')?.url || '#'}
-                                            preserveState
-                                            className={`inline-flex items-center justify-center w-8 h-8 text-sm border rounded ${urls.current_page === urls.last_page
-                                                ? 'border-gray-200 text-gray-400 cursor-not-allowed'
-                                                : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-                                                }`}
-                                            tabIndex={urls.current_page === urls.last_page ? -1 : undefined}
-                                        >
-                                            <ChevronRight className="w-4 h-4" />
-                                        </Link>
-                                        {/* Last Page */}
-                                        <Link
-                                            href={urls.links?.[urls.links.length - 1]?.url || '#'}
-                                            preserveState
-                                            className={`inline-flex items-center justify-center w-8 h-8 text-sm border rounded ${urls.current_page === urls.last_page
-                                                ? 'border-gray-200 text-gray-400 cursor-not-allowed'
-                                                : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-                                                }`}
-                                            tabIndex={urls.current_page === urls.last_page ? -1 : undefined}
-                                        >
-                                            <ChevronsRight className="w-4 h-4" />
-                                        </Link>
-                                    </div>
-                                </div>
-                            )}
                             <Button onClick={handleCreateUrl} className="whitespace-nowrap">
                                 <Plus className="h-4 w-4 mr-2" />
                                 Create URL
@@ -326,6 +252,82 @@ export default function Dashboard() {
                         </div>
                     </CardContent>
                 </Card>
+
+                {/* Pagination Controls */}
+                {urls && urls.last_page > 1 && !searchQuery && (
+                    <div className="flex items-center justify-between mt-6 ">
+                        <div className="text-sm text-muted-foreground">
+                            Showing {urls.from || 0} to {urls.to || 0} of {urls.total} results
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            {/* First Page */}
+                            <Link
+                                href={urls.links?.[0]?.url || '#'}
+                                preserveState
+                                className={`inline-flex items-center justify-center w-8 h-8 text-sm border rounded ${urls.current_page === 1
+                                    ? 'border-gray-200 text-gray-400 cursor-not-allowed'
+                                    : 'border-gray-300 text-gray-700 dark:text-white  dark:hover:bg-gray-500 hover:bg-gray-50'
+                                    }`}
+                                tabIndex={urls.current_page === 1 ? -1 : undefined}
+                            >
+                                <ChevronsLeft className="w-4 h-4" />
+                            </Link>
+                            {/* Previous Page */}
+                            <Link
+                                href={urls.links?.find(link => link.label === '&laquo; Previous')?.url || '#'}
+                                preserveState
+                                className={`inline-flex items-center justify-center w-8 h-8 text-sm border rounded ${urls.current_page === 1
+                                    ? 'border-gray-200 text-gray-400 cursor-not-allowed'
+                                    : 'border-gray-300 text-gray-700 dark:text-white  dark:hover:bg-gray-500 hover:bg-gray-50'
+                                    }`}
+                                tabIndex={urls.current_page === 1 ? -1 : undefined}
+                            >
+                                <ChevronLeft className="w-4 h-4" />
+                            </Link>
+                            {/* Page Numbers */}
+                            {urls.links
+                                ?.filter(link => !isNaN(Number(link.label)))
+                                ?.map((link, index) => (
+                                    <Link
+                                        key={index}
+                                        href={link.url || '#'}
+                                        preserveState
+                                        className={`inline-flex items-center justify-center w-8 h-8 text-sm border rounded ${link.active
+                                            ? 'border-primary bg-primary text-primary-foreground'
+                                            : 'border-gray-300 text-gray-700 dark:text-white  dark:hover:bg-gray-500 hover:bg-gray-50'
+                                            }`}
+                                    >
+                                        {link.label}
+                                    </Link>
+                                ))}
+                            {/* Next Page */}
+                            <Link
+                                href={urls.links?.find(link => link.label === 'Next &raquo;')?.url || '#'}
+                                preserveState
+                                className={`inline-flex items-center justify-center w-8 h-8 text-sm border rounded ${urls.current_page === urls.last_page
+                                    ? 'border-gray-200 text-gray-400 cursor-not-allowed'
+                                    : 'border-gray-300 text-gray-700 dark:text-white dark:hover:bg-gray-500 hover:bg-gray-50'
+                                    }`}
+                                tabIndex={urls.current_page === urls.last_page ? -1 : undefined}
+                            >
+                                <ChevronRight className="w-4 h-4" />
+                            </Link>
+                            {/* Last Page */}
+                            <Link
+                                href={urls.links?.[urls.links.length - 1]?.url || '#'}
+                                preserveState
+                                className={`inline-flex items-center justify-center w-8 h-8 text-sm border rounded ${urls.current_page === urls.last_page
+                                    ? 'border-gray-200 text-gray-400 cursor-not-allowed'
+                                    : 'border-gray-300 text-gray-700 dark:text-white dark:hover:bg-gray-500 hover:bg-gray-50'
+                                    }`}
+                                tabIndex={urls.current_page === urls.last_page ? -1 : undefined}
+                            >
+                                <ChevronsRight className="w-4 h-4" />
+                            </Link>
+                        </div>
+                    </div>
+                )}
+
 
                 {/* Create URL Dialog */}
                 <Dialog open={createDialogOpen} onOpenChange={handleCreateDialogOpenChange}>

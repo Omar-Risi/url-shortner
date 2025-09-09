@@ -57,6 +57,7 @@ class UrlController extends Controller
 
         $url = Url::where('short_code', $short_code)->firstOrFail();
 
+        $url->increment('clicks');
         return redirect()->to($url->original_url);
     }
 }

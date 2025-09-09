@@ -257,7 +257,7 @@ export default function Dashboard() {
                                                         rel="noopener noreferrer"
                                                         className="text-primary hover:underline"
                                                     >
-                                                        {url.short_code}
+                                                        {`${window.location.origin}/${url.short_code}`}
                                                     </a>
                                                 </TableCell>
                                                 <TableCell className="text-right font-mono">

@@ -8,21 +8,45 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
         <SidebarGroup className="px-2 py-0">
             <SidebarGroupLabel>Links</SidebarGroupLabel>
             <SidebarMenu>
-                {items.map((item) => (
-                    <SidebarMenuItem key={item.title}>
-                        <SidebarMenuButton
-                            asChild
-                            isActive={page.url.startsWith(typeof item.href === 'string' ? item.href : item.href.url)}
-                            tooltip={{ children: item.title }}
-                        >
-                            <Link href={item.href} prefetch>
-                                {item.icon && <item.icon />}
-                                <span>{item.title}</span>
-                            </Link>
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                ))}
+
+                {/* Render non admin items */}
+                {items.map((item) =>
+                    !item.admin ? (
+                        <SidebarMenuItem key={item.title}>
+                            <SidebarMenuButton
+                                asChild
+                                isActive={page.url.startsWith(typeof item.href === 'string' ? item.href : item.href.url)}
+                                tooltip={{ children: item.title }}
+                            >
+                                <Link href={item.href} prefetch>
+                                    {item.icon && <item.icon />}
+                                    <span>{item.title}</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    ) : null
+                )}
             </SidebarMenu>
+
+            {page.props.isAdmin && <SidebarGroupLabel className='mt-4'>Admin management</SidebarGroupLabel>}
+            <SidebarMenu>
+                {items.map((item) =>
+                    item.admin && page.props.isAdmin ? (
+                        <SidebarMenuItem key={item.title}>
+                            <SidebarMenuButton
+                                asChild
+                                isActive={page.url.startsWith(typeof item.href === 'string' ? item.href : item.href.url)}
+                                tooltip={{ children: item.title }}
+                            >
+                                <Link href={item.href} prefetch>
+                                    {item.icon && <item.icon />}
+                                    <span>{item.title}</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    ) : null)}
+            </SidebarMenu>
+
         </SidebarGroup>
     );
 }

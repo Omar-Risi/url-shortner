@@ -5,10 +5,29 @@ namespace App\Http\Controllers;
 use App\Models\Url;
 use Illuminate\Http\Request;
 use Tuupola\Base62;
+use Inertia\Inertia;
 
 class UrlController extends Controller
 {
 
+    public function index(Request $request) {
+
+        $query = Url::where('user_id', auth()->id()); // always limit to logged-in user
+
+        // Apply search filter if provided
+        if ($request->filled('search')) {
+            $query->where(function ($q) use ($request) {
+                $q->where('original_url', 'like', '%' . $request->search . '%')
+                ->orWhere('short_code', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        $urls = $query->latest()->paginate(20)->withQueryString();
+
+        return Inertia::render('dashboard', [
+            'urls' => $urls,
+        ]);
+    }
     public function store(Request $request) {
 
        $validated =  $request->validate([

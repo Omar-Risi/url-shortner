@@ -2,7 +2,7 @@ import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 import { Head, usePage, useForm, Link } from '@inertiajs/react';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -19,9 +19,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Dashboard() {
-    const { urls } = usePage().props;
-    const [searchQuery, setSearchQuery] = useState('');
-    const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+    const { urls, query } = usePage().props;
+    const [searchQuery, setSearchQuery] = useState(query || '');
     const [createDialogOpen, setCreateDialogOpen] = useState(false);
     const [editDialogOpen, setEditDialogOpen] = useState(false);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -52,19 +51,11 @@ export default function Dashboard() {
         processing: deleteProcessing,
     } = useForm();
 
-    // Debounce search functionality
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setDebouncedSearchQuery(searchQuery);
-        }, 500);
-        return () => clearTimeout(timer);
-    }, [searchQuery]);
-
-    // Filter URLs based on debounced search query
-    const filteredUrls = urls.data.filter(url =>
-        url.original_url.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
-        url.shortUrl.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
-    );
+    // Form for search
+    const {
+        get,
+        processing: searchProcessing
+    } = useForm();
 
     const handleCreateUrl = () => {
         setCreateDialogOpen(true);
@@ -79,6 +70,26 @@ export default function Dashboard() {
     const handleDeleteUrl = (url) => {
         setDeletingUrl(url);
         setDeleteDialogOpen(true);
+    };
+
+    const handleSearch = (e: React.FormEvent) => {
+        e.preventDefault();
+        const searchUrl = searchQuery.trim()
+            ? `/dashboard?search=${encodeURIComponent(searchQuery.trim())}`
+            : '/dashboard';
+
+        get(searchUrl, {
+            preserveState: true,
+            preserveScroll: true,
+        });
+    };
+
+    const clearSearch = () => {
+        setSearchQuery('');
+        get('/dashboard', {
+            preserveState: true,
+            preserveScroll: true,
+        });
     };
 
     const submitCreateForm = (e: React.FormEvent) => {
@@ -160,20 +171,51 @@ export default function Dashboard() {
                     </CardHeader>
                     <CardContent>
                         <div className="flex gap-4 items-center">
-                            <div className="relative flex-1">
-                                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                <Input
-                                    placeholder="Search URLs..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="pl-10"
-                                />
-                            </div>
+                            <form onSubmit={handleSearch} className="flex gap-2 flex-1">
+                                <div className="relative flex-1">
+                                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/50" />
+                                    <Input
+                                        placeholder="Search URLs..."
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        className="pl-10"
+                                    />
+                                </div>
+                                <Button
+                                    type="submit"
+                                    variant="outline"
+                                    size="default"
+                                    disabled={searchProcessing}
+                                    className="whitespace-nowrap"
+                                >
+                                    {searchProcessing ? (
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                        <Search className="h-4 w-4" />
+                                    )}
+                                </Button>
+                                {query && (
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="default"
+                                        onClick={clearSearch}
+                                        className="whitespace-nowrap"
+                                    >
+                                        Clear
+                                    </Button>
+                                )}
+                            </form>
                             <Button onClick={handleCreateUrl} className="whitespace-nowrap">
                                 <Plus className="h-4 w-4 mr-2" />
                                 Create URL
                             </Button>
                         </div>
+                        {query && (
+                            <div className="mt-4 text-sm text-foreground/70">
+                                Showing results for: <span className="font-semibold">"{query}"</span>
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
 
@@ -196,8 +238,8 @@ export default function Dashboard() {
                                 <TableBody>
                                     {urls.data.length === 0 ? (
                                         <TableRow>
-                                            <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
-                                                {searchQuery ? 'No URLs found matching your search.' : 'No URLs created yet. Create your first URL!'}
+                                            <TableCell colSpan={4} className="text-center py-8 text-foreground/60">
+                                                {query ? `No URLs found matching "${query}".` : 'No URLs created yet. Create your first URL!'}
                                             </TableCell>
                                         </TableRow>
                                     ) : (
@@ -205,8 +247,8 @@ export default function Dashboard() {
                                             <TableRow key={url.id}>
                                                 <TableCell className="font-medium">
                                                     <div className="flex items-center gap-2">
-                                                        <ExternalLink className="h-4 w-4 text-muted-foreground" />
-                                                        <span className="truncate max-w-md" title={url.originalUrl}>
+                                                        <ExternalLink className="h-4 w-4 text-foreground/50" />
+                                                        <span className="truncate max-w-md text-foreground" title={url.originalUrl}>
                                                             {url.original_url}
                                                         </span>
                                                     </div>
@@ -254,9 +296,9 @@ export default function Dashboard() {
                 </Card>
 
                 {/* Pagination Controls */}
-                {urls && urls.last_page > 1 && !searchQuery && (
-                    <div className="flex items-center justify-between mt-6 ">
-                        <div className="text-sm text-muted-foreground">
+                {urls && urls.last_page > 1 && (
+                    <div className="flex items-center justify-between mt-6">
+                        <div className="text-sm text-foreground/70">
                             Showing {urls.from || 0} to {urls.to || 0} of {urls.total} results
                         </div>
                         <div className="flex items-center space-x-2">
@@ -264,9 +306,9 @@ export default function Dashboard() {
                             <Link
                                 href={urls.links?.[0]?.url || '#'}
                                 preserveState
-                                className={`inline-flex items-center justify-center w-8 h-8 text-sm border rounded ${urls.current_page === 1
-                                    ? 'border-gray-200 text-gray-400 cursor-not-allowed'
-                                    : 'border-gray-300 text-gray-700 dark:text-white  dark:hover:bg-gray-500 hover:bg-gray-50'
+                                className={`inline-flex items-center justify-center w-8 h-8 text-sm border rounded transition-colors ${urls.current_page === 1
+                                    ? 'border-border text-foreground/30 cursor-not-allowed'
+                                    : 'border-border text-foreground/80 hover:bg-accent hover:text-accent-foreground'
                                     }`}
                                 tabIndex={urls.current_page === 1 ? -1 : undefined}
                             >
@@ -276,9 +318,9 @@ export default function Dashboard() {
                             <Link
                                 href={urls.links?.find(link => link.label === '&laquo; Previous')?.url || '#'}
                                 preserveState
-                                className={`inline-flex items-center justify-center w-8 h-8 text-sm border rounded ${urls.current_page === 1
-                                    ? 'border-gray-200 text-gray-400 cursor-not-allowed'
-                                    : 'border-gray-300 text-gray-700 dark:text-white  dark:hover:bg-gray-500 hover:bg-gray-50'
+                                className={`inline-flex items-center justify-center w-8 h-8 text-sm border rounded transition-colors ${urls.current_page === 1
+                                    ? 'border-border text-foreground/30 cursor-not-allowed'
+                                    : 'border-border text-foreground/80 hover:bg-accent hover:text-accent-foreground'
                                     }`}
                                 tabIndex={urls.current_page === 1 ? -1 : undefined}
                             >
@@ -292,9 +334,9 @@ export default function Dashboard() {
                                         key={index}
                                         href={link.url || '#'}
                                         preserveState
-                                        className={`inline-flex items-center justify-center w-8 h-8 text-sm border rounded ${link.active
+                                        className={`inline-flex items-center justify-center w-8 h-8 text-sm border rounded transition-colors ${link.active
                                             ? 'border-primary bg-primary text-primary-foreground'
-                                            : 'border-gray-300 text-gray-700 dark:text-white  dark:hover:bg-gray-500 hover:bg-gray-50'
+                                            : 'border-border text-foreground/80 hover:bg-accent hover:text-accent-foreground'
                                             }`}
                                     >
                                         {link.label}
@@ -304,9 +346,9 @@ export default function Dashboard() {
                             <Link
                                 href={urls.links?.find(link => link.label === 'Next &raquo;')?.url || '#'}
                                 preserveState
-                                className={`inline-flex items-center justify-center w-8 h-8 text-sm border rounded ${urls.current_page === urls.last_page
-                                    ? 'border-gray-200 text-gray-400 cursor-not-allowed'
-                                    : 'border-gray-300 text-gray-700 dark:text-white dark:hover:bg-gray-500 hover:bg-gray-50'
+                                className={`inline-flex items-center justify-center w-8 h-8 text-sm border rounded transition-colors ${urls.current_page === urls.last_page
+                                    ? 'border-border text-foreground/30 cursor-not-allowed'
+                                    : 'border-border text-foreground/80 hover:bg-accent hover:text-accent-foreground'
                                     }`}
                                 tabIndex={urls.current_page === urls.last_page ? -1 : undefined}
                             >
@@ -316,9 +358,9 @@ export default function Dashboard() {
                             <Link
                                 href={urls.links?.[urls.links.length - 1]?.url || '#'}
                                 preserveState
-                                className={`inline-flex items-center justify-center w-8 h-8 text-sm border rounded ${urls.current_page === urls.last_page
-                                    ? 'border-gray-200 text-gray-400 cursor-not-allowed'
-                                    : 'border-gray-300 text-gray-700 dark:text-white dark:hover:bg-gray-500 hover:bg-gray-50'
+                                className={`inline-flex items-center justify-center w-8 h-8 text-sm border rounded transition-colors ${urls.current_page === urls.last_page
+                                    ? 'border-border text-foreground/30 cursor-not-allowed'
+                                    : 'border-border text-foreground/80 hover:bg-accent hover:text-accent-foreground'
                                     }`}
                                 tabIndex={urls.current_page === urls.last_page ? -1 : undefined}
                             >
@@ -327,7 +369,6 @@ export default function Dashboard() {
                         </div>
                     </div>
                 )}
-
 
                 {/* Create URL Dialog */}
                 <Dialog open={createDialogOpen} onOpenChange={handleCreateDialogOpenChange}>
@@ -403,7 +444,7 @@ export default function Dashboard() {
                                 {editingUrl && (
                                     <div className="grid gap-2">
                                         <Label>Shortened URL</Label>
-                                        <div className="text-sm text-muted-foreground bg-muted p-2 rounded">
+                                        <div className="text-sm text-foreground/70 bg-muted p-2 rounded">
                                             {editingUrl.short_code}
                                         </div>
                                     </div>
@@ -443,20 +484,20 @@ export default function Dashboard() {
                                 <div className="grid gap-4 py-4">
                                     <div className="p-4 bg-muted rounded-lg">
                                         <div className="grid gap-2">
-                                            <div className="text-sm font-medium">Original URL:</div>
-                                            <div className="text-sm text-muted-foreground break-all">
+                                            <div className="text-sm font-medium text-foreground">Original URL:</div>
+                                            <div className="text-sm text-foreground/80 break-all">
                                                 {deletingUrl.original_url}
                                             </div>
                                         </div>
                                         <div className="grid gap-2 mt-3">
-                                            <div className="text-sm font-medium">Shortened URL:</div>
-                                            <div className="text-sm text-muted-foreground">
+                                            <div className="text-sm font-medium text-foreground">Shortened URL:</div>
+                                            <div className="text-sm text-foreground/80">
                                                 {`${window.location.origin}/short/${deletingUrl.short_code}`}
                                             </div>
                                         </div>
                                         <div className="grid gap-2 mt-3">
-                                            <div className="text-sm font-medium">Total Clicks:</div>
-                                            <div className="text-sm text-muted-foreground">
+                                            <div className="text-sm font-medium text-foreground">Total Clicks:</div>
+                                            <div className="text-sm text-foreground/80">
                                                 {deletingUrl.clicks.toLocaleString()}
                                             </div>
                                         </div>

@@ -2,13 +2,13 @@
 
 use App\Http\Controllers\UrlController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\WelcomeController;
 use App\Http\Middleware\AdminMiddleware;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', function () {
-    return Inertia::render('welcome');
-})->name('home');
+Route::get('/', [WelcomeController::class, 'index'])->name('home');
+Route::post('/', [WelcomeController::class, 'store']);
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [UrlController::class, 'index'])->name('dashboard');

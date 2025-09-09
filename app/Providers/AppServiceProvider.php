@@ -23,6 +23,11 @@ class AppServiceProvider extends ServiceProvider
 
         Inertia::share([
             'user' => fn() => auth()->user(),
+            'flash' => [
+                'success' => fn () => session()->get('success'),
+                'error' => fn () => session()->get('error'),
+            ],
+            'short_code' => fn () => session()->get('short_code'),
         ]);
     }
 }

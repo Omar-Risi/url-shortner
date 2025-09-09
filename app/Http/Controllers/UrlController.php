@@ -28,28 +28,38 @@ class UrlController extends Controller
             'urls' => $urls,
         ]);
     }
-    public function store(Request $request) {
 
-       $validated =  $request->validate([
-            'original_url' => ['required', 'url'],
-        ],
-        [
-            'original_url.required' => 'Please enter a URL.',
-            'original_url.original_url' => 'The URL must be valid and start with http:// or https://',
-        ]);
+        public function store(Request $request)
+        {
+            $validated = $request->validate([
+                'original_url' => ['required', 'url'],
+            ], [
+                'original_url.required' => 'Please enter a URL.',
+                'original_url.url' => 'The URL must be valid and start with http:// or https://',
+            ]);
 
-       $base62 = new Base62();
+            $base62 = new Base62();
+            $url = Url::create([
+                'original_url' => $validated['original_url'],
+                'user_id' => auth()->id(), // This will be null for anonymous users
+            ]);
 
-       $url = Url::create([
-           'original_url' => $validated['original_url'],
-           'user_id' => auth()->id(),
-       ]);
+            $url->short_code = $base62->encode($url->id);
+            $url->save();
 
-       $url->short_code = $base62->encode($url->id);
-       $url->save();
+            // For API requests, return JSON response with the short code
+            if ($request->expectsJson() || $request->is('api/*')) {
+                return response()->json([
+                    'success' => true,
+                    'short_code' => $url->short_code,
+                    'original_url' => $url->original_url,
+                    'short_url' => url($url->short_code),
+                ]);
+            }
 
-       return redirect()->to(route('dashboard'))->with('successs');
-    }
+            // For regular form submissions, redirect to dashboard
+            return redirect()->to(route('dashboard'))->with('success', 'URL shortened successfully!');
+        }
 
     public function update(Request $request, int $id) {
 

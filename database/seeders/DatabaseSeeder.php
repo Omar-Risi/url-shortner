@@ -21,6 +21,16 @@ class DatabaseSeeder extends Seeder
             'password' => 'admin123',
             'phone_number' => '+96812345678',
             'email_verified_at' => now(),
+            'is_admin' => true,
+        ]);
+
+        User::factory()->create([
+            'name' => 'admin 2',
+            'email' => 'admin2@example.com',
+            'password' => 'admin123',
+            'phone_number' => '+96812345678',
+            'email_verified_at' => now(),
+            'is_admin' => false,
         ]);
     }
 }

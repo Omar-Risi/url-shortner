@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\UrlController;
+use App\Models\Url;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -10,8 +11,11 @@ Route::get('/', function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
+
+        $urls = auth()->user()->urls()->latest()->paginate(2);
+
         return Inertia::render('dashboard',
-            ['urls' => auth()->user()->urls()->latest()->paginate(20)]);
+            ['urls' => $urls]);
     })->name('dashboard');
 });
 

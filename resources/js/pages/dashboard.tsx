@@ -20,13 +20,27 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function Dashboard() {
     const { urls } = usePage().props;
-
     const [searchQuery, setSearchQuery] = useState('');
     const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
     const [createDialogOpen, setCreateDialogOpen] = useState(false);
+    const [editDialogOpen, setEditDialogOpen] = useState(false);
+    const [editingUrl, setEditingUrl] = useState(null);
 
     // Form for creating URLs
     const { data, setData, post, processing, errors, reset, clearErrors } = useForm({
+        original_url: '',
+    });
+
+    // Form for editing URLs
+    const {
+        data: editData,
+        setData: setEditData,
+        put,
+        processing: editProcessing,
+        errors: editErrors,
+        reset: resetEdit,
+        clearErrors: clearEditErrors
+    } = useForm({
         original_url: '',
     });
 
@@ -35,7 +49,6 @@ export default function Dashboard() {
         const timer = setTimeout(() => {
             setDebouncedSearchQuery(searchQuery);
         }, 500);
-
         return () => clearTimeout(timer);
     }, [searchQuery]);
 
@@ -49,14 +62,14 @@ export default function Dashboard() {
         setCreateDialogOpen(true);
     };
 
-    const handleEditUrl = (id: number) => {
-        // Navigate to edit URL page - you can implement this with Inertia
-        console.log('Edit URL with ID:', id);
+    const handleEditUrl = (url) => {
+        setEditingUrl(url);
+        setEditData('original_url', url.original_url);
+        setEditDialogOpen(true);
     };
 
     const submitCreateForm = (e: React.FormEvent) => {
         e.preventDefault();
-
         post('/api/url/store', {
             onSuccess: () => {
                 setCreateDialogOpen(false);
@@ -68,11 +81,36 @@ export default function Dashboard() {
         });
     };
 
-    const handleDialogOpenChange = (open: boolean) => {
+    const submitEditForm = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!editingUrl) return;
+
+        put(`/api/url/update/${editingUrl.id}`, {
+            onSuccess: () => {
+                setEditDialogOpen(false);
+                setEditingUrl(null);
+                resetEdit();
+            },
+            onError: () => {
+                // Errors will be handled automatically by Inertia
+            },
+        });
+    };
+
+    const handleCreateDialogOpenChange = (open: boolean) => {
         setCreateDialogOpen(open);
         if (!open) {
             reset();
             clearErrors();
+        }
+    };
+
+    const handleEditDialogOpenChange = (open: boolean) => {
+        setEditDialogOpen(open);
+        if (!open) {
+            setEditingUrl(null);
+            resetEdit();
+            clearEditErrors();
         }
     };
 
@@ -96,7 +134,6 @@ export default function Dashboard() {
                                     className="pl-10"
                                 />
                             </div>
-
                             {/* Pagination Controls */}
                             {urls && urls.last_page > 1 && !searchQuery && (
                                 <div className="flex items-center justify-between mt-6">
@@ -116,7 +153,6 @@ export default function Dashboard() {
                                         >
                                             <ChevronsLeft className="w-4 h-4" />
                                         </Link>
-
                                         {/* Previous Page */}
                                         <Link
                                             href={urls.links?.find(link => link.label === '&laquo; Previous')?.url || '#'}
@@ -129,7 +165,6 @@ export default function Dashboard() {
                                         >
                                             <ChevronLeft className="w-4 h-4" />
                                         </Link>
-
                                         {/* Page Numbers */}
                                         {urls.links
                                             ?.filter(link => !isNaN(Number(link.label)))
@@ -146,7 +181,6 @@ export default function Dashboard() {
                                                     {link.label}
                                                 </Link>
                                             ))}
-
                                         {/* Next Page */}
                                         <Link
                                             href={urls.links?.find(link => link.label === 'Next &raquo;')?.url || '#'}
@@ -159,7 +193,6 @@ export default function Dashboard() {
                                         >
                                             <ChevronRight className="w-4 h-4" />
                                         </Link>
-
                                         {/* Last Page */}
                                         <Link
                                             href={urls.links?.[urls.links.length - 1]?.url || '#'}
@@ -234,7 +267,7 @@ export default function Dashboard() {
                                                     <Button
                                                         variant="outline"
                                                         size="sm"
-                                                        onClick={() => handleEditUrl(url.id)}
+                                                        onClick={() => handleEditUrl(url)}
                                                     >
                                                         <Edit className="h-4 w-4 mr-2" />
                                                         Edit
@@ -250,7 +283,7 @@ export default function Dashboard() {
                 </Card>
 
                 {/* Create URL Dialog */}
-                <Dialog open={createDialogOpen} onOpenChange={handleDialogOpenChange}>
+                <Dialog open={createDialogOpen} onOpenChange={handleCreateDialogOpenChange}>
                     <DialogContent className="sm:max-w-[425px]">
                         <form onSubmit={submitCreateForm}>
                             <DialogHeader>
@@ -279,7 +312,7 @@ export default function Dashboard() {
                                 <Button
                                     type="button"
                                     variant="outline"
-                                    onClick={() => handleDialogOpenChange(false)}
+                                    onClick={() => handleCreateDialogOpenChange(false)}
                                     disabled={processing}
                                 >
                                     Cancel
@@ -289,6 +322,60 @@ export default function Dashboard() {
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                     )}
                                     Create URL
+                                </Button>
+                            </DialogFooter>
+                        </form>
+                    </DialogContent>
+                </Dialog>
+
+                {/* Edit URL Dialog */}
+                <Dialog open={editDialogOpen} onOpenChange={handleEditDialogOpenChange}>
+                    <DialogContent className="sm:max-w-[425px]">
+                        <form onSubmit={submitEditForm}>
+                            <DialogHeader>
+                                <DialogTitle>Edit URL</DialogTitle>
+                                <DialogDescription>
+                                    Update the original URL for this shortened link.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <div className="grid gap-4 py-4">
+                                <div className="grid gap-2">
+                                    <Label htmlFor="edit_original_url">Original URL</Label>
+                                    <Input
+                                        id="edit_original_url"
+                                        type="url"
+                                        placeholder="https://example.com"
+                                        value={editData.original_url}
+                                        onChange={(e) => setEditData('original_url', e.target.value)}
+                                        required
+                                    />
+                                    {editErrors.original_url && (
+                                        <p className="text-sm text-red-600">{editErrors.original_url}</p>
+                                    )}
+                                </div>
+                                {editingUrl && (
+                                    <div className="grid gap-2">
+                                        <Label>Shortened URL</Label>
+                                        <div className="text-sm text-muted-foreground bg-muted p-2 rounded">
+                                            {editingUrl.short_code}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                            <DialogFooter>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => handleEditDialogOpenChange(false)}
+                                    disabled={editProcessing}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button type="submit" disabled={editProcessing}>
+                                    {editProcessing && (
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    )}
+                                    Update URL
                                 </Button>
                             </DialogFooter>
                         </form>

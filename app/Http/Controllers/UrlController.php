@@ -31,4 +31,25 @@ class UrlController extends Controller
 
        return redirect()->to(route('dashboard'))->with('successs');
     }
+
+    public function update(Request $request, int $id) {
+
+
+       $request->validate([
+           'original_url' => ['required', 'url'],
+        ],
+        [
+            'original_url.required' => 'Please enter a URL.',
+            'original_url.original_url' => 'The URL must be valid and start with http:// or https://',
+        ]);
+
+        $url = Url::findOrFail($id);
+        $url->update([
+            'original_url' => $request->original_url
+        ]);
+
+
+
+        return back()->with('successs');
+    }
 }

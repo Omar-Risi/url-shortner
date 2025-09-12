@@ -25,7 +25,7 @@ export default function Welcome() {
                 // Assuming the response includes the short_code
                 const response = page.props as any;
                 if (response.short_code) {
-                    setShortUrl(`${window.location.origin}/${response.short_code}`);
+                    setShortUrl(`${window.location.origin}/short/${response.short_code}`);
                 }
                 reset('original_url');
                 setIsLoading(false);

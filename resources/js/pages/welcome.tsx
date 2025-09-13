@@ -25,7 +25,7 @@ export default function Welcome() {
                 // Assuming the response includes the short_code
                 const response = page.props as any;
                 if (response.short_code) {
-                    setShortUrl(`${window.location.origin}/short/${response.short_code}`);
+                    setShortUrl(`${window.location.origin}/${response.short_code}`);
                 }
                 reset('original_url');
                 setIsLoading(false);
@@ -38,7 +38,7 @@ export default function Welcome() {
 
     const copyToClipboard = async () => {
         try {
-            await navigator.clipboard.writeText(shortUrl);
+            await window.navigator.clipboard.writeText(shortUrl);
             // You could add a toast notification here
         } catch (err) {
             console.error('Failed to copy: ', err);

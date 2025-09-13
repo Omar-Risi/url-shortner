@@ -21,7 +21,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::post('/api/url/store', [UrlController::class, 'store'])->name('link.store');
 Route::put('/api/url/update/{id}', [UrlController::class, 'update'])->name('update.store');
 Route::delete('/api/url/delete/{id}', [UrlController::class, 'delete'])->name('link.destroy');
-Route::get('/short/{short_code}', [UrlController::class, 'redirect'])->name('link.redirect');
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
+
+
+Route::get('/{short_code}', [UrlController::class, 'redirect'])->name('link.redirect');

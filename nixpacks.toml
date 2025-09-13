@@ -187,3 +187,6 @@ autorestart=true
 stderr_logfile=/var/log/worker-inertia-ssr.log
 stdout_logfile=/var/log/worker-inertia-ssr.log
 '''
+
+[variables]
+NIXPACKS_NODE_VERSION = '22'

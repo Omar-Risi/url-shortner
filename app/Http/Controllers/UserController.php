@@ -29,4 +29,30 @@ class UserController extends Controller
             'query' => $query,
         ]);
     }
+
+    public function edit(Request $request, string $id) {
+        $user = User::findOrFail($id);
+
+        return Inertia::render('user/edit', [
+            'user' => $user,
+        ]);
+    }
+
+    public function update(Request $request, string $id) {
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|lowercase|email|max:255',
+            'phone_number' => ['required', 'string', 'max:20'],
+            'is_admin' => ['boolean'],
+        ]);
+
+        $user = User::findOrFail($id);
+
+        $user->update(
+            $validated
+        );
+
+        return redirect()->to(route('users'))->with('success');
+    }
 }

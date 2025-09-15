@@ -16,6 +16,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/users', [UserController::class, 'index'])
         ->name('users')
         ->middleware(AdminMiddleware::class);
+
+    Route::get('/users/edit/{id}', [UserController::class, 'edit'])
+        ->name('users.edit')
+        ->middleware(AdminMiddleware::class);
+
+    Route::put('/users/{id}', [UserController::class, 'update'])
+        ->name('users.update')
+        ->middleware(AdminMiddleware::class);
 });
 
 Route::post('/api/url/store', [UrlController::class, 'store'])->name('link.store');

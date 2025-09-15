@@ -1,6 +1,6 @@
-import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, usePage, useForm } from '@inertiajs/react';
+import AppLayout from '@/layouts/app-layout';
+import { Link, Head, usePage, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -16,7 +16,7 @@ interface User {
     email_verified_at: string | null;
     created_at: string;
     updated_at: string;
-    role?: string;
+    is_admin?: boolean;
     status?: 'active' | 'inactive';
 }
 
@@ -174,7 +174,7 @@ export default function Users() {
                                         <TableHead>Status</TableHead>
                                         <TableHead>Role</TableHead>
                                         <TableHead>Joined</TableHead>
-                                        <TableHead>Last Updated</TableHead>
+                                        <TableHead> Actions </TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -208,8 +208,8 @@ export default function Users() {
                                                     {getStatusBadge(user)}
                                                 </TableCell>
                                                 <TableCell>
-                                                    <Badge variant="outline">
-                                                        {user.role || 'User'}
+                                                    <Badge variant={user.is_admin ? `destructive` : 'outline'}>
+                                                        {user.is_admin ? 'Admin' : 'User'}
                                                     </Badge>
                                                 </TableCell>
                                                 <TableCell>
@@ -221,9 +221,9 @@ export default function Users() {
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <span className="text-sm text-foreground/60">
-                                                        {formatDate(user.updated_at)}
-                                                    </span>
+                                                    <Button>
+                                                        <Link href={`/users/edit/${user.id}`}> edit </Link>
+                                                    </Button>
                                                 </TableCell>
                                             </TableRow>
                                         ))

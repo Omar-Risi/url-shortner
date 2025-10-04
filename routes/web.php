@@ -4,13 +4,25 @@ use App\Http\Controllers\UrlController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WelcomeController;
 use App\Http\Middleware\AdminMiddleware;
+use App\Http\Middleware\TermsMiddleware;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', [WelcomeController::class, 'index'])->name('home');
-Route::post('/', [WelcomeController::class, 'store']);
+Route::get('/terms', function() {
+    return Inertia::render('terms');
+});
+Route::get('/terms/agree', function() {
+    return redirect()->to(route('home'))->withCookie(cookie('termsAccepted', 'true', 525600));
+});
 
-Route::middleware(['auth', 'verified'])->group(function () {
+
+
+Route::middleware([TermsMiddleware::class])->group(function () {
+    Route::get('/', [WelcomeController::class, 'index'])->name('home');
+    Route::post('/', [WelcomeController::class, 'store']);
+});
+
+Route::middleware(['auth', 'verified',TermsMiddleware::class])->group(function () {
     Route::get('dashboard', [UrlController::class, 'index'])->name('dashboard');
 
     Route::get('/users', [UserController::class, 'index'])

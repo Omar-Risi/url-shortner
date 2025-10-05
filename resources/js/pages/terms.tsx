@@ -41,7 +41,7 @@ export default function TermsAndConditions() {
                 <p>We may update these Terms and Conditions from time to time. The latest version will always be available on our website. Continued use of the Service after changes indicates your acceptance of the updated Terms.</p>
                 <br />
 
-                <div className="flex justify-end w-full gap-8">
+                <div className="flex flex-col lg:flex-row justify-end w-full gap-8">
                     <Button
                         variant="destructive" >
                         <a href="https://nahj.tech"> I Don't Agree </a>

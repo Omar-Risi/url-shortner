@@ -47,15 +47,6 @@ class UrlController extends Controller
             $url->short_code = $base62->encode($url->id);
             $url->save();
 
-            // For API requests, return JSON response with the short code
-            if ($request->expectsJson() || $request->is('api/*')) {
-                return response()->json([
-                    'success' => true,
-                    'short_code' => $url->short_code,
-                    'original_url' => $url->original_url,
-                    'short_url' => url($url->short_code),
-                ]);
-            }
 
             // For regular form submissions, redirect to dashboard
             return redirect()->to(route('dashboard'))->with('success', 'URL shortened successfully!');

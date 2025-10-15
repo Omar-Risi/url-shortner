@@ -2,14 +2,16 @@ import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 import { Head, usePage, useForm, Link } from '@inertiajs/react';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Search, Plus, Edit, ExternalLink, Loader2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Trash2 } from 'lucide-react';
+import { Search, Plus, Edit, ExternalLink, Loader2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Trash2, QrCode, Download, Upload, X } from 'lucide-react';
+import { QRCodeCanvas } from 'qrcode.react';
+import { Slider } from '@/components/ui/slider';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -24,8 +26,20 @@ export default function Dashboard() {
     const [createDialogOpen, setCreateDialogOpen] = useState(false);
     const [editDialogOpen, setEditDialogOpen] = useState(false);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [qrDialogOpen, setQrDialogOpen] = useState(false);
     const [editingUrl, setEditingUrl] = useState(null);
     const [deletingUrl, setDeletingUrl] = useState(null);
+    const [qrUrl, setQrUrl] = useState(null);
+
+    // QR Code customization state
+    const [qrSize, setQrSize] = useState(300);
+    const [qrFgColor, setQrFgColor] = useState('#000000');
+    const [qrBgColor, setQrBgColor] = useState('#ffffff');
+    const [qrLogo, setQrLogo] = useState<string | null>(null);
+    const [qrLogoSize, setQrLogoSize] = useState(60);
+
+    const qrCanvasRef = useRef<HTMLDivElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Form for creating URLs
     const { data, setData, post, processing, errors, reset, clearErrors } = useForm({
@@ -70,6 +84,94 @@ export default function Dashboard() {
     const handleDeleteUrl = (url) => {
         setDeletingUrl(url);
         setDeleteDialogOpen(true);
+    };
+
+    const handleShowQrCode = (url) => {
+        setQrUrl(url);
+        setQrDialogOpen(true);
+        // Reset QR customization to defaults
+        setQrSize(300);
+        setQrFgColor('#000000');
+        setQrBgColor('#ffffff');
+        setQrLogo(null);
+        setQrLogoSize(60);
+    };
+
+    const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                setQrLogo(event.target?.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleRemoveLogo = () => {
+        setQrLogo(null);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    };
+
+    const handleDownloadQr = () => {
+        if (!qrCanvasRef.current) return;
+
+        const canvas = qrCanvasRef.current.querySelector('canvas');
+        if (!canvas) return;
+
+        // Create a new canvas to add the logo
+        const finalCanvas = document.createElement('canvas');
+        const ctx = finalCanvas.getContext('2d');
+        if (!ctx) return;
+
+        finalCanvas.width = qrSize;
+        finalCanvas.height = qrSize;
+
+        // Draw QR code
+        ctx.drawImage(canvas, 0, 0);
+
+        // Draw logo if exists
+        if (qrLogo) {
+            const img = new Image();
+            img.onload = () => {
+                const logoX = (qrSize - qrLogoSize) / 2;
+                const logoY = (qrSize - qrLogoSize) / 2;
+
+                // Draw white background for logo
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(logoX - 5, logoY - 5, qrLogoSize + 10, qrLogoSize + 10);
+
+                // Draw logo
+                ctx.drawImage(img, logoX, logoY, qrLogoSize, qrLogoSize);
+
+                // Download
+                finalCanvas.toBlob((blob) => {
+                    if (blob) {
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `qr-code-${qrUrl?.short_code || 'download'}.png`;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                    }
+                });
+            };
+            img.src = qrLogo;
+        } else {
+            // Download without logo
+            finalCanvas.toBlob((blob) => {
+                if (blob) {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `qr-code-${qrUrl?.short_code || 'download'}.png`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                }
+            });
+        }
     };
 
     const handleSearch = (e: React.FormEvent) => {
@@ -157,6 +259,17 @@ export default function Dashboard() {
         setDeleteDialogOpen(open);
         if (!open) {
             setDeletingUrl(null);
+        }
+    };
+
+    const handleQrDialogOpenChange = (open: boolean) => {
+        setQrDialogOpen(open);
+        if (!open) {
+            setQrUrl(null);
+            setQrLogo(null);
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
         }
     };
 
@@ -272,6 +385,14 @@ export default function Dashboard() {
                                                         <Button
                                                             variant="outline"
                                                             size="sm"
+                                                            onClick={() => handleShowQrCode(url)}
+                                                        >
+                                                            <QrCode className="h-4 w-4 mr-2" />
+                                                            QR Code
+                                                        </Button>
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
                                                             onClick={() => handleEditUrl(url)}
                                                         >
                                                             <Edit className="h-4 w-4 mr-2" />
@@ -334,25 +455,36 @@ export default function Dashboard() {
                                                 </div>
 
                                                 {/* Actions */}
-                                                <div className="flex gap-2 pt-2">
+                                                <div className="flex flex-col gap-2 pt-2">
                                                     <Button
                                                         variant="outline"
                                                         size="sm"
-                                                        onClick={() => handleEditUrl(url)}
-                                                        className="flex-1"
+                                                        onClick={() => handleShowQrCode(url)}
+                                                        className="w-full"
                                                     >
-                                                        <Edit className="h-4 w-4 mr-2" />
-                                                        Edit
+                                                        <QrCode className="h-4 w-4 mr-2" />
+                                                        QR Code
                                                     </Button>
-                                                    <Button
-                                                        variant="destructive"
-                                                        size="sm"
-                                                        onClick={() => handleDeleteUrl(url)}
-                                                        className="flex-1"
-                                                    >
-                                                        <Trash2 className="h-4 w-4 mr-2" />
-                                                        Delete
-                                                    </Button>
+                                                    <div className="flex gap-2">
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={() => handleEditUrl(url)}
+                                                            className="flex-1"
+                                                        >
+                                                            <Edit className="h-4 w-4 mr-2" />
+                                                            Edit
+                                                        </Button>
+                                                        <Button
+                                                            variant="destructive"
+                                                            size="sm"
+                                                            onClick={() => handleDeleteUrl(url)}
+                                                            className="flex-1"
+                                                        >
+                                                            <Trash2 className="h-4 w-4 mr-2" />
+                                                            Delete
+                                                        </Button>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </CardContent>
@@ -593,6 +725,184 @@ export default function Dashboard() {
                                 </Button>
                             </DialogFooter>
                         </form>
+                    </DialogContent>
+                </Dialog>
+
+                {/* QR Code Dialog */}
+                <Dialog open={qrDialogOpen} onOpenChange={handleQrDialogOpenChange}>
+                    <DialogContent className="sm:max-w-[600px]">
+                        <DialogHeader>
+                            <DialogTitle>QR Code</DialogTitle>
+                            <DialogDescription>
+                                Customize and download your QR code
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-6 py-4">
+                            {/* QR Code Preview */}
+                            <div className="flex justify-center">
+                                <div
+                                    ref={qrCanvasRef}
+                                    className="relative inline-block p-4 bg-white rounded-lg shadow-sm"
+                                    style={{ backgroundColor: qrBgColor }}
+                                >
+                                    <QRCodeCanvas
+                                        value={qrUrl ? `${window.location.origin}/${qrUrl.short_code}` : ''}
+                                        size={qrSize}
+                                        level="H"
+                                        fgColor={qrFgColor}
+                                        bgColor={qrBgColor}
+                                        includeMargin={false}
+                                    />
+                                    {qrLogo && (
+                                        <img
+                                            src={qrLogo}
+                                            alt="Logo"
+                                            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-1 rounded"
+                                            style={{
+                                                width: `${qrLogoSize}px`,
+                                                height: `${qrLogoSize}px`,
+                                                objectFit: 'contain'
+                                            }}
+                                        />
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Customization Options */}
+                            <div className="grid gap-4 max-h-[400px] overflow-y-auto pr-2">
+                                {/* QR Code Size */}
+                                <div className="grid gap-2">
+                                    <div className="flex justify-between">
+                                        <Label>QR Code Size</Label>
+                                        <span className="text-sm text-foreground/70">{qrSize}px</span>
+                                    </div>
+                                    <Slider
+                                        value={[qrSize]}
+                                        onValueChange={(value) => setQrSize(value[0])}
+                                        min={200}
+                                        max={500}
+                                        step={10}
+                                        className="w-full"
+                                    />
+                                </div>
+
+                                {/* Foreground Color */}
+                                <div className="grid gap-2">
+                                    <Label htmlFor="fg-color">QR Code Color</Label>
+                                    <div className="flex gap-2">
+                                        <Input
+                                            id="fg-color"
+                                            type="color"
+                                            value={qrFgColor}
+                                            onChange={(e) => setQrFgColor(e.target.value)}
+                                            className="w-20 h-10 p-1 cursor-pointer"
+                                        />
+                                        <Input
+                                            type="text"
+                                            value={qrFgColor}
+                                            onChange={(e) => setQrFgColor(e.target.value)}
+                                            className="flex-1"
+                                            placeholder="#000000"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Background Color */}
+                                <div className="grid gap-2">
+                                    <Label htmlFor="bg-color">Background Color</Label>
+                                    <div className="flex gap-2">
+                                        <Input
+                                            id="bg-color"
+                                            type="color"
+                                            value={qrBgColor}
+                                            onChange={(e) => setQrBgColor(e.target.value)}
+                                            className="w-20 h-10 p-1 cursor-pointer"
+                                        />
+                                        <Input
+                                            type="text"
+                                            value={qrBgColor}
+                                            onChange={(e) => setQrBgColor(e.target.value)}
+                                            className="flex-1"
+                                            placeholder="#ffffff"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Logo Upload */}
+                                <div className="grid gap-2">
+                                    <Label>Logo (Optional)</Label>
+                                    <div className="flex gap-2">
+                                        <Input
+                                            ref={fileInputRef}
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleLogoUpload}
+                                            className="flex-1"
+                                        />
+                                        {qrLogo && (
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="icon"
+                                                onClick={handleRemoveLogo}
+                                            >
+                                                <X className="h-4 w-4" />
+                                            </Button>
+                                        )}
+                                    </div>
+                                    <p className="text-xs text-foreground/60">
+                                        Upload a logo to display in the center of your QR code
+                                    </p>
+                                </div>
+
+                                {/* Logo Size */}
+                                {qrLogo && (
+                                    <div className="grid gap-2">
+                                        <div className="flex justify-between">
+                                            <Label>Logo Size</Label>
+                                            <span className="text-sm text-foreground/70">{qrLogoSize}px</span>
+                                        </div>
+                                        <Slider
+                                            value={[qrLogoSize]}
+                                            onValueChange={(value) => setQrLogoSize(value[0])}
+                                            min={40}
+                                            max={Math.floor(qrSize * 0.3)}
+                                            step={5}
+                                            className="w-full"
+                                        />
+                                        <p className="text-xs text-foreground/60">
+                                            Keep logo size under 30% of QR code size for best scanning results
+                                        </p>
+                                    </div>
+                                )}
+
+                                {/* URL Info */}
+                                {qrUrl && (
+                                    <div className="p-3 bg-muted rounded-lg">
+                                        <div className="text-xs text-foreground/50 mb-1">Shortened URL</div>
+                                        <div className="text-sm font-medium break-all">
+                                            {`${window.location.origin}/${qrUrl.short_code}`}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                        <DialogFooter>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => handleQrDialogOpenChange(false)}
+                            >
+                                Close
+                            </Button>
+                            <Button
+                                type="button"
+                                onClick={handleDownloadQr}
+                            >
+                                <Download className="mr-2 h-4 w-4" />
+                                Download PNG
+                            </Button>
+                        </DialogFooter>
                     </DialogContent>
                 </Dialog>
             </div>

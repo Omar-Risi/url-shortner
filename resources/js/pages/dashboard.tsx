@@ -730,7 +730,7 @@ export default function Dashboard() {
 
                 {/* QR Code Dialog */}
                 <Dialog open={qrDialogOpen} onOpenChange={handleQrDialogOpenChange}>
-                    <DialogContent className="sm:max-w-[600px]">
+                    <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
                         <DialogHeader>
                             <DialogTitle>QR Code</DialogTitle>
                             <DialogDescription>
@@ -739,10 +739,10 @@ export default function Dashboard() {
                         </DialogHeader>
                         <div className="grid gap-6 py-4">
                             {/* QR Code Preview */}
-                            <div className="flex justify-center">
+                            <div className="flex justify-center overflow-x-auto">
                                 <div
                                     ref={qrCanvasRef}
-                                    className="relative inline-block p-4 bg-white rounded-lg shadow-sm"
+                                    className="relative inline-block p-2 sm:p-4 bg-white rounded-lg shadow-sm"
                                     style={{ backgroundColor: qrBgColor }}
                                 >
                                     <QRCodeCanvas
@@ -769,11 +769,11 @@ export default function Dashboard() {
                             </div>
 
                             {/* Customization Options */}
-                            <div className="grid gap-4 max-h-[400px] overflow-y-auto pr-2">
+                            <div className="grid gap-4">
                                 {/* QR Code Size */}
                                 <div className="grid gap-2">
                                     <div className="flex justify-between">
-                                        <Label>QR Code Size</Label>
+                                        <Label className="text-sm">QR Code Size</Label>
                                         <span className="text-sm text-foreground/70">{qrSize}px</span>
                                     </div>
                                     <Slider
@@ -788,20 +788,20 @@ export default function Dashboard() {
 
                                 {/* Foreground Color */}
                                 <div className="grid gap-2">
-                                    <Label htmlFor="fg-color">QR Code Color</Label>
+                                    <Label htmlFor="fg-color" className="text-sm">QR Code Color</Label>
                                     <div className="flex gap-2">
                                         <Input
                                             id="fg-color"
                                             type="color"
                                             value={qrFgColor}
                                             onChange={(e) => setQrFgColor(e.target.value)}
-                                            className="w-20 h-10 p-1 cursor-pointer"
+                                            className="w-16 sm:w-20 h-10 p-1 cursor-pointer"
                                         />
                                         <Input
                                             type="text"
                                             value={qrFgColor}
                                             onChange={(e) => setQrFgColor(e.target.value)}
-                                            className="flex-1"
+                                            className="flex-1 text-sm"
                                             placeholder="#000000"
                                         />
                                     </div>
@@ -809,20 +809,20 @@ export default function Dashboard() {
 
                                 {/* Background Color */}
                                 <div className="grid gap-2">
-                                    <Label htmlFor="bg-color">Background Color</Label>
+                                    <Label htmlFor="bg-color" className="text-sm">Background Color</Label>
                                     <div className="flex gap-2">
                                         <Input
                                             id="bg-color"
                                             type="color"
                                             value={qrBgColor}
                                             onChange={(e) => setQrBgColor(e.target.value)}
-                                            className="w-20 h-10 p-1 cursor-pointer"
+                                            className="w-16 sm:w-20 h-10 p-1 cursor-pointer"
                                         />
                                         <Input
                                             type="text"
                                             value={qrBgColor}
                                             onChange={(e) => setQrBgColor(e.target.value)}
-                                            className="flex-1"
+                                            className="flex-1 text-sm"
                                             placeholder="#ffffff"
                                         />
                                     </div>
@@ -830,14 +830,14 @@ export default function Dashboard() {
 
                                 {/* Logo Upload */}
                                 <div className="grid gap-2">
-                                    <Label>Logo (Optional)</Label>
+                                    <Label className="text-sm">Logo (Optional)</Label>
                                     <div className="flex gap-2">
                                         <Input
                                             ref={fileInputRef}
                                             type="file"
                                             accept="image/*"
                                             onChange={handleLogoUpload}
-                                            className="flex-1"
+                                            className="flex-1 text-sm"
                                         />
                                         {qrLogo && (
                                             <Button
@@ -845,6 +845,7 @@ export default function Dashboard() {
                                                 variant="outline"
                                                 size="icon"
                                                 onClick={handleRemoveLogo}
+                                                className="flex-shrink-0"
                                             >
                                                 <X className="h-4 w-4" />
                                             </Button>
@@ -859,7 +860,7 @@ export default function Dashboard() {
                                 {qrLogo && (
                                     <div className="grid gap-2">
                                         <div className="flex justify-between">
-                                            <Label>Logo Size</Label>
+                                            <Label className="text-sm">Logo Size</Label>
                                             <span className="text-sm text-foreground/70">{qrLogoSize}px</span>
                                         </div>
                                         <Slider
@@ -887,17 +888,19 @@ export default function Dashboard() {
                                 )}
                             </div>
                         </div>
-                        <DialogFooter>
+                        <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
                             <Button
                                 type="button"
                                 variant="outline"
                                 onClick={() => handleQrDialogOpenChange(false)}
+                                className="w-full sm:w-auto"
                             >
                                 Close
                             </Button>
                             <Button
                                 type="button"
                                 onClick={handleDownloadQr}
+                                className="w-full sm:w-auto"
                             >
                                 <Download className="mr-2 h-4 w-4" />
                                 Download PNG

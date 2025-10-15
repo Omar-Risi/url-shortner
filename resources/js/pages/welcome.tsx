@@ -196,13 +196,14 @@ export default function Welcome() {
                                     </div>
                                     <div>
                                         <p className="text-sm font-medium text-[#1b1b18] dark:text-[#EDEDEC]">
-                                            Link Moderation & Safety
+                                            QR code generation
                                         </p>
                                         <p className="text-xs text-[#6B7280] dark:text-[#9CA3AF]">
-                                            Free link monitoring for spam, malware, and inappropriate content
+                                            Generate and customize qr codes for your shortened links
                                         </p>
                                     </div>
                                 </div>
+
                             </div>
 
                             <div className="flex flex-col sm:flex-row gap-2">

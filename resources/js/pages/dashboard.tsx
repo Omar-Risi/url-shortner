@@ -170,7 +170,7 @@ export default function Dashboard() {
                         <CardTitle>URL Management</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="flex gap-4 items-center">
+                        <div className="flex gap-4 items-center flex-wrap">
                             <form onSubmit={handleSearch} className="flex gap-2 flex-1">
                                 <div className="relative flex-1">
                                     <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/50" />
@@ -206,7 +206,7 @@ export default function Dashboard() {
                                     </Button>
                                 )}
                             </form>
-                            <Button onClick={handleCreateUrl} className="whitespace-nowrap">
+                            <Button onClick={handleCreateUrl} className="whitespace-nowrap w-full lg:w-auto">
                                 <Plus className="h-4 w-4 mr-2" />
                                 Create URL
                             </Button>
@@ -225,7 +225,8 @@ export default function Dashboard() {
                         <CardTitle>Your URLs</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="rounded-md border">
+                        {/* Desktop Table View */}
+                        <div className="rounded-md border hidden lg:block">
                             <Table>
                                 <TableHeader>
                                     <TableRow>
@@ -291,6 +292,73 @@ export default function Dashboard() {
                                     )}
                                 </TableBody>
                             </Table>
+                        </div>
+
+                        {/* Mobile Card View */}
+                        <div className="lg:hidden space-y-4">
+                            {urls.data.length === 0 ? (
+                                <div className="text-center py-8 text-foreground/60">
+                                    {query ? `No URLs found matching "${query}".` : 'No URLs created yet. Create your first URL!'}
+                                </div>
+                            ) : (
+                                urls.data.map((url) => (
+                                    <Card key={url.id}>
+                                        <CardContent className="p-4">
+                                            <div className="space-y-3">
+                                                {/* Original URL */}
+                                                <div>
+                                                    <div className="text-xs text-foreground/50 mb-1">Original URL</div>
+                                                    <div className="flex items-start gap-2">
+                                                        <ExternalLink className="h-4 w-4 text-foreground/50 mt-0.5 flex-shrink-0" />
+                                                        <span className="text-sm break-all">{url.original_url}</span>
+                                                    </div>
+                                                </div>
+
+                                                {/* Shortened URL */}
+                                                <div>
+                                                    <div className="text-xs text-foreground/50 mb-1">Shortened URL</div>
+                                                    <a
+                                                        href={`/${url.short_code}`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="text-sm text-primary hover:underline break-all"
+                                                    >
+                                                        {`${window.location.origin}/${url.short_code}`}
+                                                    </a>
+                                                </div>
+
+                                                {/* Clicks */}
+                                                <div>
+                                                    <div className="text-xs text-foreground/50 mb-1">Clicks</div>
+                                                    <div className="text-sm font-mono">{url.clicks.toLocaleString()}</div>
+                                                </div>
+
+                                                {/* Actions */}
+                                                <div className="flex gap-2 pt-2">
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => handleEditUrl(url)}
+                                                        className="flex-1"
+                                                    >
+                                                        <Edit className="h-4 w-4 mr-2" />
+                                                        Edit
+                                                    </Button>
+                                                    <Button
+                                                        variant="destructive"
+                                                        size="sm"
+                                                        onClick={() => handleDeleteUrl(url)}
+                                                        className="flex-1"
+                                                    >
+                                                        <Trash2 className="h-4 w-4 mr-2" />
+                                                        Delete
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                ))
+                            )}
                         </div>
                     </CardContent>
                 </Card>

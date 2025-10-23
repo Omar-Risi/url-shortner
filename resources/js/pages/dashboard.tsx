@@ -114,30 +114,36 @@ export default function Dashboard() {
             fileInputRef.current.value = '';
         }
     };
-
     const handleDownloadQr = () => {
         if (!qrCanvasRef.current) return;
-
         const canvas = qrCanvasRef.current.querySelector('canvas');
         if (!canvas) return;
 
-        // Create a new canvas to add the logo
+        // Create a new canvas to add the logo and padding
         const finalCanvas = document.createElement('canvas');
         const ctx = finalCanvas.getContext('2d');
         if (!ctx) return;
 
-        finalCanvas.width = qrSize;
-        finalCanvas.height = qrSize;
+        const padding = 5;
 
-        // Draw QR code
-        ctx.drawImage(canvas, 0, 0);
+        // Add padding to canvas dimensions
+        finalCanvas.width = canvas.width + (padding * 2);
+        finalCanvas.height = canvas.height + (padding * 2);
+
+        // Fill with white background
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
+
+        // Draw QR code with padding offset
+        ctx.drawImage(canvas, padding, padding);
 
         // Draw logo if exists
         if (qrLogo) {
             const img = new Image();
             img.onload = () => {
-                const logoX = (qrSize - qrLogoSize) / 2;
-                const logoY = (qrSize - qrLogoSize) / 2;
+                // Calculate logo position based on actual canvas size (with padding)
+                const logoX = (finalCanvas.width - qrLogoSize) / 2;
+                const logoY = (finalCanvas.height - qrLogoSize) / 2;
 
                 // Draw white background for logo
                 ctx.fillStyle = '#ffffff';

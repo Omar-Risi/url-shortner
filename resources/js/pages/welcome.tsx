@@ -1,3 +1,5 @@
+import AppLogo from '@/components/app-logo';
+import AppLogoIcon from '@/components/app-logo-icon';
 import { dashboard, login, register } from '@/routes';
 import { type SharedData } from '@/types';
 import { Head, Link, usePage, useForm } from '@inertiajs/react';
@@ -83,10 +85,13 @@ export default function Welcome() {
                 </header>
 
                 <main className="flex flex-1 justify-center w-full max-w-md flex-col items-center space-y-6">
-                    <div className="text-center">
-                        <h1 className="text-3xl font-semibold text-[#1b1b18] dark:text-[#EDEDEC] mb-2">
-                            URL Shortener
-                        </h1>
+                    <div className="w-full">
+                        <div className='flex items-start gap-2'>
+                            <AppLogo />
+                            <h1 className="text-3xl font-semibold text-[#1b1b18] dark:text-[#EDEDEC] mb-2">
+                                Shrt.om
+                            </h1>
+                        </div>
                         <p className="text-[#6B7280] dark:text-[#9CA3AF]">
                             Shorten your long URLs quickly and easily
                         </p>

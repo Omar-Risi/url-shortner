@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Search, Plus, Edit, ExternalLink, Loader2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Trash2, QrCode, Download, Upload, X } from 'lucide-react';
+import { Search, Plus, Edit, ExternalLink, Loader2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Trash2, QrCode, Download, Upload, X, Check } from 'lucide-react';
 import { QRCodeCanvas } from 'qrcode.react';
 import { Slider } from '@/components/ui/slider';
 
@@ -30,6 +30,7 @@ export default function Dashboard() {
     const [editingUrl, setEditingUrl] = useState(null);
     const [deletingUrl, setDeletingUrl] = useState(null);
     const [qrUrl, setQrUrl] = useState(null);
+    const [copiedUrlId, setCopiedUrlId] = useState<number | null>(null);
 
     // QR Code customization state
     const [qrSize, setQrSize] = useState(300);
@@ -279,6 +280,18 @@ export default function Dashboard() {
         }
     };
 
+    const copyToClipboard = async (url) => {
+        try {
+            const shortUrl = `${window.location.origin}/${url.short_code}`
+            await window.navigator.clipboard.writeText(shortUrl);
+
+            setCopiedUrlId(url.id);
+            setTimeout(() => setCopiedUrlId(null), 3000);
+        } catch (err) {
+            console.error('Failed to copy: ', err);
+        }
+    };
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
@@ -388,6 +401,24 @@ export default function Dashboard() {
                                                 </TableCell>
                                                 <TableCell className="text-right">
                                                     <div className="flex gap-2 justify-end">
+
+                                                        {copiedUrlId !== url.id && <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={() => copyToClipboard(url)}
+                                                            className="rounded border border-[#19140035] px-3 py-2 text-sm text-[#1b1b18] hover:border-[#1915014a] hover:bg-[#f3f3f2] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b] dark:hover:bg-[#2a2a2a]"
+                                                        >
+                                                            Copy URL
+                                                        </Button>}
+                                                        {copiedUrlId === url.id && <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={() => copyToClipboard(url)}
+                                                            className="flex gap-2 items-center rounded border border-green-600 bg-green-300/20 px-3 py-2 text-sm text-green-600  hover:bg-green-300/30" >
+                                                            <Check />
+                                                            <span> Copied!</span>
+                                                        </Button>}
+
                                                         <Button
                                                             variant="outline"
                                                             size="sm"
@@ -462,6 +493,25 @@ export default function Dashboard() {
 
                                                 {/* Actions */}
                                                 <div className="flex flex-col gap-2 pt-2">
+
+                                                    {copiedUrlId !== url.id && <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => copyToClipboard(url)}
+                                                        className="rounded border border-[#19140035] px-3 py-2 text-sm text-[#1b1b18] hover:border-[#1915014a] hover:bg-[#f3f3f2] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b] dark:hover:bg-[#2a2a2a]"
+                                                    >
+                                                        Copy URL
+                                                    </Button>}
+                                                    {copiedUrlId === url.id && <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => copyToClipboard(url)}
+                                                        className="flex gap-2 items-center rounded border border-green-600 bg-green-300/20 px-3 py-2 text-sm text-green-600  hover:bg-green-300/30" >
+                                                        <Check />
+                                                        <span> Copied!</span>
+                                                    </Button>}
+
+
                                                     <Button
                                                         variant="outline"
                                                         size="sm"
@@ -472,6 +522,15 @@ export default function Dashboard() {
                                                         QR Code
                                                     </Button>
                                                     <div className="flex gap-2">
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={() => handleEditUrl(url)}
+                                                            className="flex-1"
+                                                        >
+                                                            <Edit className="h-4 w-4 mr-2" />
+                                                            Edit
+                                                        </Button>
                                                         <Button
                                                             variant="outline"
                                                             size="sm"

@@ -151,7 +151,7 @@ export default function Welcome() {
                                     Copy
                                 </button>}
 
-                                {!isCopied && <button
+                                {isCopied && <button
                                     type="button"
                                     onClick={copyToClipboard}
                                     className="flex gap-2 items-center rounded border border-green-600 bg-green-300/20 px-3 py-2 text-sm text-green-600  hover:bg-green-300/30" >

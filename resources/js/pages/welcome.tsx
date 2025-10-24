@@ -3,6 +3,7 @@ import AppLogoIcon from '@/components/app-logo-icon';
 import { dashboard, login, register } from '@/routes';
 import { type SharedData } from '@/types';
 import { Head, Link, usePage, useForm } from '@inertiajs/react';
+import { Check } from 'lucide-react';
 import { FormEventHandler, useState } from 'react';
 
 interface FormData {
@@ -12,6 +13,7 @@ interface FormData {
 export default function Welcome() {
     const { auth, flash } = usePage<SharedData>().props;
     const [shortUrl, setShortUrl] = useState<string>('');
+    const [isCopied, setIsCopied] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState(false);
 
     const { data, setData, post, processing, errors, reset } = useForm<FormData>({
@@ -41,7 +43,11 @@ export default function Welcome() {
     const copyToClipboard = async () => {
         try {
             await window.navigator.clipboard.writeText(shortUrl);
-            // You could add a toast notification here
+
+            setIsCopied(true)
+
+            setTimeout(() => setIsCopied(false), 3000)
+
         } catch (err) {
             console.error('Failed to copy: ', err);
         }
@@ -137,13 +143,21 @@ export default function Welcome() {
                                     readOnly
                                     className="flex-1 rounded border border-[#19140035] bg-white px-3 py-2 text-sm text-[#1b1b18] dark:border-[#3E3E3A] dark:bg-[#0a0a0a] dark:text-[#EDEDEC]"
                                 />
-                                <button
+                                {!isCopied && <button
                                     type="button"
                                     onClick={copyToClipboard}
                                     className="rounded border border-[#19140035] px-3 py-2 text-sm text-[#1b1b18] hover:border-[#1915014a] hover:bg-[#f3f3f2] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b] dark:hover:bg-[#2a2a2a]"
                                 >
                                     Copy
-                                </button>
+                                </button>}
+
+                                {!isCopied && <button
+                                    type="button"
+                                    onClick={copyToClipboard}
+                                    className="flex gap-2 items-center rounded border border-green-600 bg-green-300/20 px-3 py-2 text-sm text-green-600  hover:bg-green-300/30" >
+                                    <Check />
+                                    <span> Copied!</span>
+                                </button>}
                             </div>
                         </div>
                     )}

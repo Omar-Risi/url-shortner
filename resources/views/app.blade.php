@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="icon" type="image/png" href="/logo-white.png">
         <link rel="shortcut icon" type="image/png" href="/logo-white.png">
-        <link rel="apple-touch-icon" href="/logo-white.png">
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
         {{-- Inline script to detect system dark mode preference and apply it immediately --}}
         <script>

@@ -13,11 +13,6 @@ class VerifyEmailController extends Controller
      */
     public function __invoke(EmailVerificationRequest $request): RedirectResponse
     {
-
-        $request->server->set('HTTPS', 'on');
-        $request->server->set('SERVER_PORT', 443);
-
-
         if ($request->user()->hasVerifiedEmail()) {
             return redirect()->intended(route('dashboard', absolute: false).'?verified=1');
         }

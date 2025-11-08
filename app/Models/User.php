@@ -24,7 +24,9 @@ class User extends Authenticatable implements  MustVerifyEmail
         'email',
         'phone_number',
         'password',
-        'is_admin'
+        'is_admin',
+        'otp',
+        'otp_expires_at',
     ];
 
     /**
@@ -35,6 +37,7 @@ class User extends Authenticatable implements  MustVerifyEmail
     protected $hidden = [
         'password',
         'remember_token',
+        'otp',
     ];
 
     /**
@@ -46,6 +49,7 @@ class User extends Authenticatable implements  MustVerifyEmail
     {
         return [
             'email_verified_at' => 'datetime',
+            'otp_expires_at' => 'datetime',
             'password' => 'hashed',
         ];
     }
@@ -58,5 +62,14 @@ class User extends Authenticatable implements  MustVerifyEmail
      public function urls():HasMany {
          return $this->hasMany(Url::class);
      }
+
+    /**
+     * Override the default email verification notification.
+     * We use OTP instead, so disable the default notification.
+     */
+    public function sendEmailVerificationNotification(): void
+    {
+        // Do nothing - we use OTP verification instead
+    }
 }
 

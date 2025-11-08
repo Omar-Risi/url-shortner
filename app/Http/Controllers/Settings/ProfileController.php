@@ -32,7 +32,15 @@ class ProfileController extends Controller
         $request->user()->fill($request->validated());
 
         if ($request->user()->isDirty('email')) {
+            // Generate new OTP for email verification
+            $otp = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+            
             $request->user()->email_verified_at = null;
+            $request->user()->otp = $otp;
+            $request->user()->otp_expires_at = now()->addMinutes(10);
+            
+            // Send OTP to new email
+            \Mail::to($request->user()->email)->send(new \App\Mail\OtpMail($otp));
         }
 
         $request->user()->save();

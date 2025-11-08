@@ -10,8 +10,6 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Middleware\TermsMiddleware;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Http\Request;
-
 
 Route::middleware(['guest', TermsMiddleware::class])->group(function () {
     Route::get('register', [RegisteredUserController::class, 'create'])
@@ -43,76 +41,9 @@ Route::middleware('auth')->group(function () {
     Route::get('verify-email', EmailVerificationPromptController::class)
         ->name('verification.notice');
 
-    /* Route::get('verify-email/{id}/{hash}', VerifyEmailController::class) */
-    /*     ->middleware(['signed', 'throttle:6,1']) */
-    /*     ->name('verification.verify'); */
-
-    Route::get('/verify-email/{id}/{hash}', function (Request $request, $id, $hash) {
-    // Force HTTPS
-    $request->server->set('HTTPS', 'on');
-    $request->server->set('SERVER_PORT', 443);
-
-    $user = \App\Models\User::findOrFail($id);
-
-    // Reconstruct what the signature SHOULD be
-    $correctUrl = \Illuminate\Support\Facades\URL::temporarySignedRoute(
-        'verification.verify',
-        \Carbon\Carbon::createFromTimestamp($request->query('expires')),
-        [
-            'id' => $id,
-            'hash' => $hash,
-        ]
-    );
-
-    // Parse both URLs
-    $receivedUrl = $request->fullUrl();
-    $receivedParsed = parse_url($receivedUrl);
-    $correctParsed = parse_url($correctUrl);
-
-    parse_str($receivedParsed['query'] ?? '', $receivedQuery);
-    parse_str($correctParsed['query'] ?? '', $correctQuery);
-
-    return response()->json([
-        'RECEIVED_URL' => $receivedUrl,
-        'EXPECTED_URL' => $correctUrl,
-        'URLS_MATCH' => $receivedUrl === $correctUrl,
-
-        'COMPARISON' => [
-            'scheme' => [
-                'received' => $receivedParsed['scheme'] ?? null,
-                'expected' => $correctParsed['scheme'] ?? null,
-                'match' => ($receivedParsed['scheme'] ?? null) === ($correctParsed['scheme'] ?? null),
-            ],
-            'host' => [
-                'received' => $receivedParsed['host'] ?? null,
-                'expected' => $correctParsed['host'] ?? null,
-                'match' => ($receivedParsed['host'] ?? null) === ($correctParsed['host'] ?? null),
-            ],
-            'path' => [
-                'received' => $receivedParsed['path'] ?? null,
-                'expected' => $correctParsed['path'] ?? null,
-                'match' => ($receivedParsed['path'] ?? null) === ($correctParsed['path'] ?? null),
-            ],
-            'signature' => [
-                'received' => $receivedQuery['signature'] ?? null,
-                'expected' => $correctQuery['signature'] ?? null,
-                'match' => ($receivedQuery['signature'] ?? null) === ($correctQuery['signature'] ?? null),
-            ],
-        ],
-
-        'CONFIG' => [
-            'app_url' => config('app.url'),
-            'app_key' => substr(config('app.key'), 0, 20) . '...',
-            'environment' => app()->environment(),
-        ],
-
-        'REQUEST_INFO' => [
-            'scheme' => $request->getScheme(),
-            'host' => $request->getHost(),
-            'full_url' => $request->fullUrl(),
-        ],
-    ]);
-    })->name('verification.verify.debug');
+    Route::get('verify-email/{id}/{hash}', VerifyEmailController::class)
+        ->middleware(['signed', 'throttle:6,1'])
+        ->name('verification.verify');
 
     Route::post('email/verification-notification', [EmailVerificationNotificationController::class, 'store'])
         ->middleware('throttle:6,1')

@@ -17,6 +17,8 @@ Route::get('/terms/agree', function() {
 
 
 
+Route::post('/locale/switch', [\App\Http\Controllers\LocaleController::class, 'switch'])->name('locale.switch');
+
 Route::middleware([TermsMiddleware::class])->group(function () {
     Route::get('/', [WelcomeController::class, 'index'])->name('home');
     Route::post('/', [WelcomeController::class, 'store']);

@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Search, Loader2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, User, Mail, Calendar } from 'lucide-react';
+import { useTranslation } from '@/hooks/use-translation';
 
 interface User {
     id: number;
@@ -37,16 +38,17 @@ interface UsersPageProps {
     query: string;
 }
 
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Users',
-        href: '/users',
-    },
-];
-
 export default function Users() {
     const { users, query } = usePage<UsersPageProps>().props;
     const [searchQuery, setSearchQuery] = useState(query || '');
+    const { t } = useTranslation();
+
+    const breadcrumbs: BreadcrumbItem[] = [
+        {
+            title: t('users.title'),
+            href: '/users',
+        },
+    ];
 
     // Form for search
     const {
@@ -94,33 +96,33 @@ export default function Users() {
         }
         return (
             <Badge variant={user.email_verified_at ? 'default' : 'secondary'}>
-                {user.email_verified_at ? 'Verified' : 'Unverified'}
+                {user.email_verified_at ? t('users.status_verified') : t('users.status_unverified')}
             </Badge>
         );
     };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Users" />
+            <Head title={t('users.title')} />
             <div className="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4">
                 {/* Search Section */}
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <User className="h-5 w-5" />
-                            Users Management
+                            {t('users.management')}
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="flex gap-4 items-center">
                             <form onSubmit={handleSearch} className="flex gap-2 flex-1">
                                 <div className="relative flex-1">
-                                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/50" />
+                                    <Search className="absolute ltr:left-3 rtl:right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/50" />
                                     <Input
-                                        placeholder="Search users by name, email, or phone number..."
+                                        placeholder={t('users.search_placeholder')}
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
-                                        className="pl-10"
+                                        className="ltr:pl-10 rtl:pr-10"
                                     />
                                 </div>
                                 <Button
@@ -144,14 +146,14 @@ export default function Users() {
                                         onClick={clearSearch}
                                         className="whitespace-nowrap"
                                     >
-                                        Clear
+                                        {t('users.button_clear')}
                                     </Button>
                                 )}
                             </form>
                         </div>
                         {query && (
                             <div className="mt-4 text-sm text-foreground/70">
-                                Showing results for: <span className="font-semibold">"{query}"</span>
+                                {t('users.showing_results')} <span className="font-semibold">"{query}"</span>
                             </div>
                         )}
                     </CardContent>
@@ -161,7 +163,7 @@ export default function Users() {
                 <Card>
                     <CardHeader>
                         <CardTitle>
-                            All Users ({users.total.toLocaleString()})
+                            {t('users.all_users')} ({users.total.toLocaleString()})
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -169,19 +171,19 @@ export default function Users() {
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>User</TableHead>
-                                        <TableHead>Email</TableHead>
-                                        <TableHead>Status</TableHead>
-                                        <TableHead>Role</TableHead>
-                                        <TableHead>Joined</TableHead>
-                                        <TableHead> Actions </TableHead>
+                                        <TableHead>{t('users.table_user')}</TableHead>
+                                        <TableHead>{t('users.table_email')}</TableHead>
+                                        <TableHead>{t('users.table_status')}</TableHead>
+                                        <TableHead>{t('users.table_role')}</TableHead>
+                                        <TableHead>{t('users.table_joined')}</TableHead>
+                                        <TableHead>{t('users.table_actions')}</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {users.data.length === 0 ? (
                                         <TableRow>
                                             <TableCell colSpan={6} className="text-center py-8 text-foreground/60">
-                                                {query ? `No users found matching "${query}".` : 'No users found.'}
+                                                {query ? `${t('users.no_results')} "${query}".` : t('users.no_users')}
                                             </TableCell>
                                         </TableRow>
                                     ) : (
@@ -209,11 +211,11 @@ export default function Users() {
                                                 </TableCell>
                                                 <TableCell>
                                                     <Badge variant={user.is_admin ? `destructive` : 'outline'}>
-                                                        {user.is_admin ? 'Admin' : 'User'}
+                                                        {user.is_admin ? t('users.role_admin') : t('users.role_user')}
                                                     </Badge>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <div className="flex items-center gap-2">
+                                                    <div className="flex items-center gap-2 rtl:flex-row-reverse">
                                                         <Calendar className="h-4 w-4 text-foreground/50" />
                                                         <span className="text-sm">
                                                             {formatDate(user.created_at)}
@@ -222,7 +224,7 @@ export default function Users() {
                                                 </TableCell>
                                                 <TableCell>
                                                     <Button>
-                                                        <Link href={`/users/edit/${user.id}`}> edit </Link>
+                                                        <Link href={`/users/edit/${user.id}`}>{t('users.button_edit')}</Link>
                                                     </Button>
                                                 </TableCell>
                                             </TableRow>
@@ -238,7 +240,10 @@ export default function Users() {
                 {users && users.last_page > 1 && (
                     <div className="flex items-center justify-between mt-6">
                         <div className="text-sm text-foreground/70">
-                            Showing {users.from || 0} to {users.to || 0} of {users.total.toLocaleString()} users
+                            {t('users.showing_pagination')
+                                .replace('{from}', String(users.from || 0))
+                                .replace('{to}', String(users.to || 0))
+                                .replace('{total}', users.total.toLocaleString())}
                         </div>
                         <div className="flex items-center space-x-2">
                             {/* First Page */}
@@ -276,7 +281,9 @@ export default function Users() {
 
                             {/* Current Page Info */}
                             <span className="text-sm text-foreground/70 px-2">
-                                Page {users.current_page} of {users.last_page}
+                                {t('users.page_of')
+                                    .replace('{current}', String(users.current_page))
+                                    .replace('{last}', String(users.last_page))}
                             </span>
 
                             {/* Next Page */}

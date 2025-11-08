@@ -6,6 +6,7 @@ import { edit } from '@/routes/profile';
 import { type User } from '@/types';
 import { Link, router } from '@inertiajs/react';
 import { LogOut, Settings } from 'lucide-react';
+import { useTranslation } from '@/hooks/use-translation';
 
 interface UserMenuContentProps {
     user: User;
@@ -13,6 +14,7 @@ interface UserMenuContentProps {
 
 export function UserMenuContent({ user }: UserMenuContentProps) {
     const cleanup = useMobileNavigation();
+    const { t } = useTranslation();
 
     const handleLogout = () => {
         cleanup();
@@ -30,16 +32,16 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
             <DropdownMenuGroup>
                 <DropdownMenuItem asChild>
                     <Link className="block w-full" href={edit()} as="button" prefetch onClick={cleanup}>
-                        <Settings className="mr-2" />
-                        Settings
+                        <Settings className="ltr:mr-2 rtl:ml-2" />
+                        {t('nav.settings')}
                     </Link>
                 </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
                 <Link className="block w-full" href={logout()} as="button" onClick={handleLogout}>
-                    <LogOut className="mr-2" />
-                    Log out
+                    <LogOut className="ltr:mr-2 rtl:ml-2" />
+                    {t('nav.logout')}
                 </Link>
             </DropdownMenuItem>
         </>

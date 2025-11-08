@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { User, Mail, Phone, Shield, Save, ArrowLeft, Loader2 } from 'lucide-react';
 import { Link } from '@inertiajs/react';
+import { useTranslation } from '@/hooks/use-translation';
 
 interface User {
     id: number;
@@ -27,14 +28,15 @@ interface EditUserPageProps {
 
 export default function EditUser() {
     const { user } = usePage<EditUserPageProps>().props;
+    const { t } = useTranslation();
 
     const breadcrumbs: BreadcrumbItem[] = [
         {
-            title: 'Users',
+            title: t('users.title'),
             href: '/users',
         },
         {
-            title: 'Edit User',
+            title: t('users.edit_title'),
             href: `/users/${user.id}/edit`,
         },
     ];
@@ -73,12 +75,12 @@ export default function EditUser() {
                         <div className="flex items-center justify-between">
                             <CardTitle className="flex items-center gap-2">
                                 <User className="h-5 w-5" />
-                                Edit User
+                                {t('users.edit_title')}
                             </CardTitle>
                             <Link href="/users">
                                 <Button variant="outline" size="sm">
-                                    <ArrowLeft className="h-4 w-4 mr-2" />
-                                    Back to Users
+                                    <ArrowLeft className="h-4 w-4 ltr:mr-2 rtl:ml-2" />
+                                    {t('users.edit_back')}
                                 </Button>
                             </Link>
                         </div>
@@ -94,19 +96,19 @@ export default function EditUser() {
                             </div>
                             <div className="flex gap-2">
                                 <Badge variant={user.email_verified_at ? 'default' : 'secondary'}>
-                                    {user.email_verified_at ? 'Verified' : 'Unverified'}
+                                    {user.email_verified_at ? t('users.status_verified') : t('users.status_unverified')}
                                 </Badge>
                                 <Badge variant={user.is_admin ? 'destructive' : 'outline'}>
-                                    {user.is_admin ? 'Admin' : 'User'}
+                                    {user.is_admin ? t('users.role_admin') : t('users.role_user')}
                                 </Badge>
                             </div>
                         </div>
                         <div className="mt-4 grid grid-cols-2 gap-4 text-sm text-foreground/60">
                             <div>
-                                <span className="font-medium">Created:</span> {formatDate(user.created_at)}
+                                <span className="font-medium">{t('users.edit_created')}</span> {formatDate(user.created_at)}
                             </div>
                             <div>
-                                <span className="font-medium">Last Updated:</span> {formatDate(user.updated_at)}
+                                <span className="font-medium">{t('users.edit_updated')}</span> {formatDate(user.updated_at)}
                             </div>
                         </div>
                     </CardContent>
@@ -115,7 +117,7 @@ export default function EditUser() {
                 {/* Edit Form */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>User Details</CardTitle>
+                        <CardTitle>{t('users.edit_details')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <form onSubmit={handleSubmit} className="space-y-6">
@@ -124,7 +126,7 @@ export default function EditUser() {
                                 <div className="space-y-2">
                                     <Label htmlFor="name" className="flex items-center gap-2">
                                         <User className="h-4 w-4" />
-                                        Full Name
+                                        {t('users.edit_label_name')}
                                     </Label>
                                     <Input
                                         id="name"
@@ -132,7 +134,7 @@ export default function EditUser() {
                                         value={data.name}
                                         onChange={(e) => setData('name', e.target.value)}
                                         className={errors.name ? 'border-red-500' : ''}
-                                        placeholder="Enter full name"
+                                        placeholder={t('users.edit_placeholder_name')}
                                         required
                                     />
                                     {errors.name && (
@@ -144,7 +146,7 @@ export default function EditUser() {
                                 <div className="space-y-2">
                                     <Label htmlFor="email" className="flex items-center gap-2">
                                         <Mail className="h-4 w-4" />
-                                        Email Address
+                                        {t('users.edit_label_email')}
                                     </Label>
                                     <Input
                                         id="email"
@@ -152,7 +154,7 @@ export default function EditUser() {
                                         value={data.email}
                                         onChange={(e) => setData('email', e.target.value)}
                                         className={errors.email ? 'border-red-500' : ''}
-                                        placeholder="Enter email address"
+                                        placeholder={t('users.edit_placeholder_email')}
                                         required
                                     />
                                     {errors.email && (
@@ -164,7 +166,7 @@ export default function EditUser() {
                                 <div className="space-y-2">
                                     <Label htmlFor="phone_number" className="flex items-center gap-2">
                                         <Phone className="h-4 w-4" />
-                                        Phone Number
+                                        {t('users.edit_label_phone')}
                                     </Label>
                                     <Input
                                         id="phone_number"
@@ -172,7 +174,7 @@ export default function EditUser() {
                                         value={data.phone_number}
                                         onChange={(e) => setData('phone_number', e.target.value)}
                                         className={errors.phone_number ? 'border-red-500' : ''}
-                                        placeholder="Enter phone number"
+                                        placeholder={t('users.edit_placeholder_phone')}
                                     />
                                     {errors.phone_number && (
                                         <p className="text-sm text-red-500">{errors.phone_number}</p>
@@ -183,7 +185,7 @@ export default function EditUser() {
                                 <div className="space-y-2">
                                     <Label className="flex items-center gap-2">
                                         <Shield className="h-4 w-4" />
-                                        Admin Status
+                                        {t('users.edit_label_admin')}
                                     </Label>
                                     <div className="flex items-center space-x-2 p-3 border rounded-md">
                                         <Checkbox
@@ -195,11 +197,11 @@ export default function EditUser() {
                                             htmlFor="is_admin"
                                             className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                                         >
-                                            Grant administrator privileges
+                                            {t('users.edit_admin_grant')}
                                         </Label>
                                     </div>
                                     <p className="text-sm text-foreground/60">
-                                        Admin users have full access to the system
+                                        {t('users.edit_admin_desc')}
                                     </p>
                                     {errors.is_admin && (
                                         <p className="text-sm text-red-500">{errors.is_admin}</p>
@@ -210,12 +212,12 @@ export default function EditUser() {
                             {/* Form Actions */}
                             <div className="flex items-center justify-between pt-6 border-t">
                                 <div className="text-sm text-foreground/60">
-                                    * Required fields
+                                    {t('users.edit_required')}
                                 </div>
                                 <div className="flex items-center gap-3">
                                     <Link href="/users">
                                         <Button type="button" variant="outline">
-                                            Cancel
+                                            {t('users.edit_button_cancel')}
                                         </Button>
                                     </Link>
                                     <Button
@@ -225,13 +227,13 @@ export default function EditUser() {
                                     >
                                         {processing ? (
                                             <>
-                                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                                Saving...
+                                                <Loader2 className="h-4 w-4 ltr:mr-2 rtl:ml-2 animate-spin" />
+                                                {t('users.edit_button_saving')}
                                             </>
                                         ) : (
                                             <>
-                                                <Save className="h-4 w-4 mr-2" />
-                                                Save Changes
+                                                <Save className="h-4 w-4 ltr:mr-2 rtl:ml-2" />
+                                                {t('users.edit_button_save')}
                                             </>
                                         )}
                                     </Button>

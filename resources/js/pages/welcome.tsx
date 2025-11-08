@@ -1,10 +1,11 @@
 import AppLogo from '@/components/app-logo';
 import { dashboard, login, register } from '@/routes';
 import { type SharedData } from '@/types';
-import { Head, Link, usePage, useForm } from '@inertiajs/react';
-import { Check, Moon, Sun } from 'lucide-react';
-import { FormEventHandler, useState } from 'react';
+import { Head, Link, usePage, useForm, router } from '@inertiajs/react';
+import { Check, Moon, Sun, Languages } from 'lucide-react';
+import { FormEventHandler, useState, useEffect } from 'react';
 import { useAppearance } from '@/hooks/use-appearance';
+import { useTranslation } from '@/hooks/use-translation';
 
 interface FormData {
     original_url: string;
@@ -16,14 +17,29 @@ export default function Welcome() {
     const [isCopied, setIsCopied] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState(false);
     const { appearance, updateAppearance } = useAppearance();
+    const { t, locale, isRTL } = useTranslation();
 
     const { data, setData, post, processing, errors, reset } = useForm<FormData>({
         original_url: '',
     });
 
+    // Set document direction based on locale
+    useEffect(() => {
+        document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
+        document.documentElement.lang = locale;
+    }, [isRTL, locale]);
+
     const toggleDarkMode = () => {
         const isDark = appearance === 'dark' || (appearance === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
         updateAppearance(isDark ? 'light' : 'dark');
+    };
+
+    const toggleLocale = () => {
+        const newLocale = locale === 'en' ? 'ar' : 'en';
+        router.post('/locale/switch', { locale: newLocale }, {
+            preserveState: true,
+            preserveScroll: true,
+        });
     };
 
     const submit: FormEventHandler = (e) => {
@@ -68,19 +84,30 @@ export default function Welcome() {
 
 
             <div className="flex min-h-screen flex-col items-center bg-[#FDFDFC] p-6 text-[#1b1b18] lg:justify-center lg:p-8 dark:bg-[#0a0a0a]">
-                <header className="mb-6 w-full max-w-[335px] text-sm not-has-[nav]:hidden lg:max-w-4xl">
+                <header className="mb-6 w-full max-w-[335px] text-sm lg:max-w-4xl">
                     <nav className="flex items-center justify-between gap-4">
-                        <button
-                            onClick={toggleDarkMode}
-                            className="inline-flex items-center justify-center rounded-sm border border-[#19140035] p-2 text-[#1b1b18] hover:border-[#1915014a] hover:bg-[#f9f9f8] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b] dark:hover:bg-[#2a2a2a]"
-                            aria-label="Toggle dark mode"
-                        >
-                            {appearance === 'dark' || (appearance === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches) ? (
-                                <Sun className="h-4 w-4" />
-                            ) : (
-                                <Moon className="h-4 w-4" />
-                            )}
-                        </button>
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={toggleDarkMode}
+                                className="inline-flex items-center justify-center rounded-sm border border-[#19140035] p-2 text-[#1b1b18] hover:border-[#1915014a] hover:bg-[#f9f9f8] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b] dark:hover:bg-[#2a2a2a]"
+                                aria-label="Toggle dark mode"
+                            >
+                                {appearance === 'dark' || (appearance === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches) ? (
+                                    <Sun className="h-4 w-4" />
+                                ) : (
+                                    <Moon className="h-4 w-4" />
+                                )}
+                            </button>
+                            
+                            <button
+                                onClick={toggleLocale}
+                                className="inline-flex items-center justify-center gap-1.5 rounded-sm border border-[#19140035] px-3 py-1.5 text-sm text-[#1b1b18] hover:border-[#1915014a] hover:bg-[#f9f9f8] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b] dark:hover:bg-[#2a2a2a]"
+                                aria-label="Toggle language"
+                            >
+                                <Languages className="h-4 w-4" />
+                                <span className="font-medium">{locale === 'en' ? 'AR' : 'EN'}</span>
+                            </button>
+                        </div>
                         
                         <div className="flex items-center gap-4">
                             {auth.user ? (
@@ -88,7 +115,7 @@ export default function Welcome() {
                                     href={dashboard()}
                                     className="inline-block rounded-sm border border-[#19140035] px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#1915014a] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b]"
                                 >
-                                    Dashboard
+                                    {t('welcome.nav_dashboard')}
                                 </Link>
                             ) : (
                                 <>
@@ -96,13 +123,13 @@ export default function Welcome() {
                                         href={login()}
                                         className="inline-block rounded-sm border border-transparent px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#19140035] dark:text-[#EDEDEC] dark:hover:border-[#3E3E3A]"
                                     >
-                                        Log in
+                                        {t('welcome.nav_login')}
                                     </Link>
                                     <Link
                                         href={register()}
                                         className="inline-block rounded-sm border border-[#19140035] px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#1915014a] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b]"
                                     >
-                                        Register
+                                        {t('welcome.nav_register')}
                                     </Link>
                                 </>
                             )}
@@ -115,11 +142,11 @@ export default function Welcome() {
                         <div className='flex items-start gap-2'>
                             <AppLogo />
                             <h1 className="text-3xl font-semibold text-[#1b1b18] dark:text-[#EDEDEC] mb-2">
-                                Shrt.om
+                                {t('welcome.title')}
                             </h1>
                         </div>
                         <p className="text-[#6B7280] dark:text-[#9CA3AF]">
-                            Shorten your long URLs quickly and easily
+                            {t('welcome.subtitle')}
                         </p>
                     </div>
 
@@ -131,7 +158,7 @@ export default function Welcome() {
                                 name="original_url"
                                 value={data.original_url}
                                 className="w-full rounded-lg border border-[#19140035] bg-white px-4 py-3 text-[#1b1b18] placeholder-[#6B7280] focus:border-[#1915014a] focus:outline-none focus:ring-0 dark:border-[#3E3E3A] dark:bg-[#1a1a1a] dark:text-[#EDEDEC] dark:placeholder-[#9CA3AF] dark:focus:border-[#62605b]"
-                                placeholder="Enter your URL here (e.g., https://example.com)"
+                                placeholder={t('welcome.input_placeholder')}
                                 onChange={(e) => setData('original_url', e.target.value)}
                                 required
                             />
@@ -147,16 +174,16 @@ export default function Welcome() {
                             disabled={processing}
                             className="w-full rounded-lg bg-[#1b1b18] px-4 py-3 font-medium text-white hover:bg-[#2a2a26] focus:outline-none focus:ring-0 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-[#EDEDEC] dark:text-[#1b1b18] dark:hover:bg-[#d4d4d4]"
                         >
-                            {processing ? 'Shortening...' : 'Shorten URL'}
+                            {processing ? t('welcome.button_shortening') : t('welcome.button_shorten')}
                         </button>
                     </form>
 
                     {shortUrl && (
                         <div className="w-full space-y-3 rounded-lg border border-[#19140035] bg-[#f9f9f8] p-4 dark:border-[#3E3E3A] dark:bg-[#1a1a1a]">
                             <p className="text-sm font-medium text-[#1b1b18] dark:text-[#EDEDEC]">
-                                Your shortened URL:
+                                {t('welcome.shortened_url')}
                             </p>
-                            <div className="flex items-center space-x-2">
+                            <div className={`flex items-center ${isRTL ? 'space-x-reverse' : ''} space-x-2`}>
                                 <input
                                     type="text"
                                     value={shortUrl}
@@ -168,7 +195,7 @@ export default function Welcome() {
                                     onClick={copyToClipboard}
                                     className="rounded border border-[#19140035] px-3 py-2 text-sm text-[#1b1b18] hover:border-[#1915014a] hover:bg-[#f3f3f2] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b] dark:hover:bg-[#2a2a2a]"
                                 >
-                                    Copy
+                                    {t('welcome.button_copy')}
                                 </button>}
 
                                 {isCopied && <button
@@ -176,7 +203,7 @@ export default function Welcome() {
                                     onClick={copyToClipboard}
                                     className="flex gap-2 items-center rounded border border-green-600 bg-green-300/20 px-3 py-2 text-sm text-green-600  hover:bg-green-300/30" >
                                     <Check />
-                                    <span> Copied!</span>
+                                    <span>{t('welcome.button_copied')}</span>
                                 </button>}
                             </div>
                         </div>
@@ -187,15 +214,15 @@ export default function Welcome() {
                         <div className="w-full mt-8 p-6 rounded-lg bg-gradient-to-br from-[#f8f9fa] to-[#e9ecef] border border-[#19140020] dark:from-[#1a1a1a] dark:to-[#2a2a2a] dark:border-[#3E3E3A]">
                             <div className="text-center mb-4">
                                 <h2 className="text-xl font-semibold text-[#1b1b18] dark:text-[#EDEDEC] mb-2">
-                                    Get More with an Account
+                                    {t('welcome.benefits_title')}
                                 </h2>
                                 <p className="text-[#6B7280] dark:text-[#9CA3AF] text-sm">
-                                    Create a free account to unlock powerful features
+                                    {t('welcome.benefits_subtitle')}
                                 </p>
                             </div>
 
                             <div className="space-y-3 mb-5">
-                                <div className="flex items-start space-x-3">
+                                <div className={`flex items-start ${isRTL ? 'space-x-reverse' : ''} space-x-3`}>
                                     <div className="flex-shrink-0 w-5 h-5 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mt-0.5">
                                         <svg className="w-3 h-3 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
                                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -203,15 +230,15 @@ export default function Welcome() {
                                     </div>
                                     <div>
                                         <p className="text-sm font-medium text-[#1b1b18] dark:text-[#EDEDEC]">
-                                            Link Management Dashboard
+                                            {t('welcome.benefit_management_title')}
                                         </p>
                                         <p className="text-xs text-[#6B7280] dark:text-[#9CA3AF]">
-                                            View, edit, and organize all your shortened links in one place
+                                            {t('welcome.benefit_management_desc')}
                                         </p>
                                     </div>
                                 </div>
 
-                                <div className="flex items-start space-x-3">
+                                <div className={`flex items-start ${isRTL ? 'space-x-reverse' : ''} space-x-3`}>
                                     <div className="flex-shrink-0 w-5 h-5 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mt-0.5">
                                         <svg className="w-3 h-3 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
                                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -219,15 +246,15 @@ export default function Welcome() {
                                     </div>
                                     <div>
                                         <p className="text-sm font-medium text-[#1b1b18] dark:text-[#EDEDEC]">
-                                            Click Analytics & Statistics
+                                            {t('welcome.benefit_analytics_title')}
                                         </p>
                                         <p className="text-xs text-[#6B7280] dark:text-[#9CA3AF]">
-                                            Track clicks, views, and performance of your links
+                                            {t('welcome.benefit_analytics_desc')}
                                         </p>
                                     </div>
                                 </div>
 
-                                <div className="flex items-start space-x-3">
+                                <div className={`flex items-start ${isRTL ? 'space-x-reverse' : ''} space-x-3`}>
                                     <div className="flex-shrink-0 w-5 h-5 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mt-0.5">
                                         <svg className="w-3 h-3 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
                                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -235,10 +262,10 @@ export default function Welcome() {
                                     </div>
                                     <div>
                                         <p className="text-sm font-medium text-[#1b1b18] dark:text-[#EDEDEC]">
-                                            QR code generation
+                                            {t('welcome.benefit_qr_title')}
                                         </p>
                                         <p className="text-xs text-[#6B7280] dark:text-[#9CA3AF]">
-                                            Generate and customize qr codes for your shortened links
+                                            {t('welcome.benefit_qr_desc')}
                                         </p>
                                     </div>
                                 </div>
@@ -250,18 +277,33 @@ export default function Welcome() {
                                     href={register()}
                                     className="flex-1 text-center rounded-lg bg-[#1b1b18] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#2a2a26] transition-colors dark:bg-[#EDEDEC] dark:text-[#1b1b18] dark:hover:bg-[#d4d4d4]"
                                 >
-                                    Create Free Account
+                                    {t('welcome.button_create_account')}
                                 </Link>
                                 <Link
                                     href={login()}
                                     className="flex-1 text-center rounded-lg border border-[#19140035] px-4 py-2.5 text-sm font-medium text-[#1b1b18] hover:bg-[#f9f9f8] transition-colors dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:bg-[#2a2a2a]"
                                 >
-                                    Sign In
+                                    {t('welcome.button_sign_in')}
                                 </Link>
                             </div>
                         </div>
                     )}
                 </main>
+
+                {/* Footer */}
+                <footer className="w-full max-w-md text-center py-6">
+                    <p className="text-sm text-[#6B7280] dark:text-[#9CA3AF]">
+                        Powered by{' '}
+                        <a
+                            href="https://nahj.tech"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[#1b1b18] dark:text-[#EDEDEC] font-medium hover:underline transition-colors"
+                        >
+                            nahj
+                        </a>
+                    </p>
+                </footer>
             </div>
         </>
     );

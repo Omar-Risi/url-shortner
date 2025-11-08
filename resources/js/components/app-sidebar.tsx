@@ -4,24 +4,10 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { BookOpen, Folder, LayoutGrid, Users } from 'lucide-react';
 import AppLogo from './app-logo';
-
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        href: dashboard(),
-        icon: LayoutGrid,
-        admin: false,
-    },
-    {
-        title: 'Users',
-        href: '/users',
-        icon: Users,
-        admin: true,
-    }
-];
+import { useTranslation } from '@/hooks/use-translation';
 
 const footerNavItems: NavItem[] = [
     // {
@@ -33,8 +19,28 @@ const footerNavItems: NavItem[] = [
 ];
 
 export function AppSidebar() {
+    const { locale } = usePage().props as { locale: string };
+    const { t } = useTranslation();
+    const isRTL = locale === 'ar';
+    const side = isRTL ? 'right' : 'left';
+
+    const mainNavItems: NavItem[] = [
+        {
+            title: t('nav.dashboard'),
+            href: dashboard(),
+            icon: LayoutGrid,
+            admin: false,
+        },
+        {
+            title: t('nav.users'),
+            href: '/users',
+            icon: Users,
+            admin: true,
+        }
+    ];
+
     return (
-        <Sidebar collapsible="icon" variant="inset">
+        <Sidebar collapsible="icon" variant="inset" side={side}>
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>

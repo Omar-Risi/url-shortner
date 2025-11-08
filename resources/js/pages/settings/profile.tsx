@@ -13,24 +13,26 @@ import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 import { edit } from '@/routes/profile';
-
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Profile settings',
-        href: edit().url,
-    },
-];
+import { useTranslation } from '@/hooks/use-translation';
 
 export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: boolean; status?: string }) {
     const { auth } = usePage<SharedData>().props;
+    const { t } = useTranslation();
+
+    const breadcrumbs: BreadcrumbItem[] = [
+        {
+            title: t('profile.title'),
+            href: edit().url,
+        },
+    ];
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Profile settings" />
+            <Head title={t('profile.title')} />
 
             <SettingsLayout>
                 <div className="space-y-6">
-                    <HeadingSmall title="Profile information" description="Update your name and email address" />
+                    <HeadingSmall title={t('profile.heading')} description={t('profile.description')} />
 
                     <Form
                         {...ProfileController.update.form()}
@@ -42,7 +44,7 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                         {({ processing, recentlySuccessful, errors }) => (
                             <>
                                 <div className="grid gap-2">
-                                    <Label htmlFor="name">Name</Label>
+                                    <Label htmlFor="name">{t('profile.label_name')}</Label>
 
                                     <Input
                                         id="name"
@@ -51,14 +53,14 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                                         name="name"
                                         required
                                         autoComplete="name"
-                                        placeholder="Full name"
+                                        placeholder={t('profile.placeholder_name')}
                                     />
 
                                     <InputError className="mt-2" message={errors.name} />
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="phone_number">Phone number</Label>
+                                    <Label htmlFor="phone_number">{t('profile.label_phone')}</Label>
 
                                     <Input
                                         id="phone_number"
@@ -67,13 +69,13 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                                         name="phone_number"
                                         required
                                         autoComplete="phone_number"
-                                        placeholder="Phone_number"
+                                        placeholder={t('profile.placeholder_phone')}
                                     />
 
                                     <InputError className="mt-2" message={errors.phone_number} />
                                 </div>
                                 <div className="grid gap-2">
-                                    <Label htmlFor="email">Email address</Label>
+                                    <Label htmlFor="email">{t('profile.label_email')}</Label>
 
                                     <Input
                                         id="email"
@@ -83,7 +85,7 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                                         name="email"
                                         required
                                         autoComplete="username"
-                                        placeholder="Email address"
+                                        placeholder={t('profile.placeholder_email')}
                                     />
 
                                     <InputError className="mt-2" message={errors.email} />
@@ -92,13 +94,13 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                                 {mustVerifyEmail && auth.user.email_verified_at === null && (
                                     <div>
                                         <p className="-mt-4 text-sm text-muted-foreground">
-                                            Your email address is unverified.{' '}
+                                            {t('profile.email_unverified')}{' '}
                                             <Link
                                                 href={send()}
                                                 as="button"
                                                 className="text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"
                                             >
-                                                Click here to resend the OTP code.
+                                                {t('profile.resend_otp')}
                                             </Link>
                                         </p>
 
@@ -111,7 +113,7 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                                 )}
 
                                 <div className="flex items-center gap-4">
-                                    <Button disabled={processing}>Save</Button>
+                                    <Button disabled={processing}>{t('profile.button_save')}</Button>
 
                                     <Transition
                                         show={recentlySuccessful}
@@ -120,7 +122,7 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                                         leave="transition ease-in-out"
                                         leaveTo="opacity-0"
                                     >
-                                        <p className="text-sm text-neutral-600">Saved</p>
+                                        <p className="text-sm text-neutral-600">{t('profile.saved')}</p>
                                     </Transition>
                                 </div>
                             </>

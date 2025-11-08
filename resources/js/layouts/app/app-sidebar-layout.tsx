@@ -3,9 +3,19 @@ import { AppShell } from '@/components/app-shell';
 import { AppSidebar } from '@/components/app-sidebar';
 import { AppSidebarHeader } from '@/components/app-sidebar-header';
 import { type BreadcrumbItem } from '@/types';
-import { type PropsWithChildren } from 'react';
+import { type PropsWithChildren, useEffect } from 'react';
+import { usePage } from '@inertiajs/react';
 
 export default function AppSidebarLayout({ children, breadcrumbs = [] }: PropsWithChildren<{ breadcrumbs?: BreadcrumbItem[] }>) {
+    const { locale } = usePage().props as { locale: string };
+    const isRTL = locale === 'ar';
+
+    // Set document direction based on locale
+    useEffect(() => {
+        document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
+        document.documentElement.lang = locale;
+    }, [isRTL, locale]);
+
     return (
         <AppShell variant="sidebar">
             <AppSidebar />

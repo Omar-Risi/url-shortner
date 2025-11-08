@@ -1,12 +1,15 @@
 import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
+import { useTranslation } from '@/hooks/use-translation';
 
 export function NavMain({ items = [] }: { items: NavItem[] }) {
     const page = usePage();
+    const { t } = useTranslation();
+    
     return (
         <SidebarGroup className="px-2 py-0">
-            <SidebarGroupLabel>Links</SidebarGroupLabel>
+            <SidebarGroupLabel>{t('nav.links')}</SidebarGroupLabel>
             <SidebarMenu>
 
                 {/* Render non admin items */}
@@ -29,7 +32,7 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
             </SidebarMenu>
 
             {/* Admin panel */}
-            {page.props.user.is_admin ? <SidebarGroupLabel className='mt-4'>Admin management</SidebarGroupLabel> : null}
+            {page.props.user.is_admin ? <SidebarGroupLabel className='mt-4'>{t('nav.admin_management')}</SidebarGroupLabel> : null}
             <SidebarMenu>
                 {items.map((item) =>
                     item.admin && page.props.user.is_admin ? (

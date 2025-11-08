@@ -2,8 +2,9 @@ import AppLogo from '@/components/app-logo';
 import { dashboard, login, register } from '@/routes';
 import { type SharedData } from '@/types';
 import { Head, Link, usePage, useForm } from '@inertiajs/react';
-import { Check } from 'lucide-react';
+import { Check, Moon, Sun } from 'lucide-react';
 import { FormEventHandler, useState } from 'react';
+import { useAppearance } from '@/hooks/use-appearance';
 
 interface FormData {
     original_url: string;
@@ -14,10 +15,16 @@ export default function Welcome() {
     const [shortUrl, setShortUrl] = useState<string>('');
     const [isCopied, setIsCopied] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState(false);
+    const { appearance, updateAppearance } = useAppearance();
 
     const { data, setData, post, processing, errors, reset } = useForm<FormData>({
         original_url: '',
     });
+
+    const toggleDarkMode = () => {
+        const isDark = appearance === 'dark' || (appearance === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        updateAppearance(isDark ? 'light' : 'dark');
+    };
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -62,30 +69,44 @@ export default function Welcome() {
 
             <div className="flex min-h-screen flex-col items-center bg-[#FDFDFC] p-6 text-[#1b1b18] lg:justify-center lg:p-8 dark:bg-[#0a0a0a]">
                 <header className="mb-6 w-full max-w-[335px] text-sm not-has-[nav]:hidden lg:max-w-4xl">
-                    <nav className="flex items-center justify-end gap-4">
-                        {auth.user ? (
-                            <Link
-                                href={dashboard()}
-                                className="inline-block rounded-sm border border-[#19140035] px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#1915014a] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b]"
-                            >
-                                Dashboard
-                            </Link>
-                        ) : (
-                            <>
+                    <nav className="flex items-center justify-between gap-4">
+                        <button
+                            onClick={toggleDarkMode}
+                            className="inline-flex items-center justify-center rounded-sm border border-[#19140035] p-2 text-[#1b1b18] hover:border-[#1915014a] hover:bg-[#f9f9f8] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b] dark:hover:bg-[#2a2a2a]"
+                            aria-label="Toggle dark mode"
+                        >
+                            {appearance === 'dark' || (appearance === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches) ? (
+                                <Sun className="h-4 w-4" />
+                            ) : (
+                                <Moon className="h-4 w-4" />
+                            )}
+                        </button>
+                        
+                        <div className="flex items-center gap-4">
+                            {auth.user ? (
                                 <Link
-                                    href={login()}
-                                    className="inline-block rounded-sm border border-transparent px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#19140035] dark:text-[#EDEDEC] dark:hover:border-[#3E3E3A]"
-                                >
-                                    Log in
-                                </Link>
-                                <Link
-                                    href={register()}
+                                    href={dashboard()}
                                     className="inline-block rounded-sm border border-[#19140035] px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#1915014a] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b]"
                                 >
-                                    Register
+                                    Dashboard
                                 </Link>
-                            </>
-                        )}
+                            ) : (
+                                <>
+                                    <Link
+                                        href={login()}
+                                        className="inline-block rounded-sm border border-transparent px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#19140035] dark:text-[#EDEDEC] dark:hover:border-[#3E3E3A]"
+                                    >
+                                        Log in
+                                    </Link>
+                                    <Link
+                                        href={register()}
+                                        className="inline-block rounded-sm border border-[#19140035] px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#1915014a] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b]"
+                                    >
+                                        Register
+                                    </Link>
+                                </>
+                            )}
+                        </div>
                     </nav>
                 </header>
 

@@ -27,6 +27,8 @@ Route::middleware([TermsMiddleware::class])->group(function () {
 Route::middleware(['auth', 'verified',TermsMiddleware::class])->group(function () {
     Route::get('dashboard', [UrlController::class, 'index'])->name('dashboard');
 
+    Route::get('links', [UrlController::class, 'links'])->name('links')
+        ->middleware(AdminMiddleware::class);
     Route::get('/users', [UserController::class, 'index'])
         ->name('users')
         ->middleware(AdminMiddleware::class);

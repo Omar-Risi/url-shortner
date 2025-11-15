@@ -29,28 +29,49 @@ class UrlController extends Controller
         ]);
     }
 
-        public function store(Request $request)
-        {
-            $validated = $request->validate([
-                'original_url' => ['required', 'url'],
-            ], [
-                'original_url.required' => 'Please enter a URL.',
-                'original_url.url' => 'The URL must be valid and start with http:// or https://',
-            ]);
+    public function links(Request $request) {
 
-            $base62 = new Base62();
-            $url = Url::create([
-                'original_url' => $validated['original_url'],
-                'user_id' => auth()->id(), // This will be null for anonymous users
-            ]);
+        $query = Url::query(); // always limit to logged-in user
 
-            $url->short_code = $base62->encode($url->id);
-            $url->save();
-
-
-            // For regular form submissions, redirect to dashboard
-            return redirect()->to(route('dashboard'))->with('success', 'URL shortened successfully!');
+        // Apply search filter if provided
+        if ($request->filled('search')) {
+            $query->where(function ($q) use ($request) {
+                $q->where('original_url', 'like', '%' . $request->search . '%')
+                ->orWhere('short_code', 'like', '%' . $request->search . '%');
+            });
         }
+
+        $urls = $query->latest()->paginate(20)->withQueryString();
+
+        return Inertia::render('dashboard', [
+            'urls' => $urls,
+        ]);
+    }
+
+
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'original_url' => ['required', 'url'],
+        ], [
+            'original_url.required' => 'Please enter a URL.',
+            'original_url.url' => 'The URL must be valid and start with http:// or https://',
+        ]);
+
+        $base62 = new Base62();
+        $url = Url::create([
+            'original_url' => $validated['original_url'],
+            'user_id' => auth()->id(), // This will be null for anonymous users
+        ]);
+
+        $url->short_code = $base62->encode($url->id);
+        $url->save();
+
+
+        // For regular form submissions, redirect to dashboard
+        return redirect()->to(route('dashboard'))->with('success', 'URL shortened successfully!');
+    }
 
     public function update(Request $request, int $id) {
 

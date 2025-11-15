@@ -5,7 +5,7 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, Sid
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Users } from 'lucide-react';
+import { BookOpen, Folder, Globe, LayoutGrid, Users } from 'lucide-react';
 import AppLogo from './app-logo';
 import { useTranslation } from '@/hooks/use-translation';
 
@@ -36,7 +36,14 @@ export function AppSidebar() {
             href: '/users',
             icon: Users,
             admin: true,
+        },
+        {
+            title: t('nav.links'),
+            href: '/links',
+            icon: Globe,
+            admin: true,
         }
+
     ];
 
     return (

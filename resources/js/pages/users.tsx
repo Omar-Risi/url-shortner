@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Search, Loader2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, User, Mail, Calendar } from 'lucide-react';
+import { Search, Loader2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, User, Mail, Calendar, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { useTranslation } from '@/hooks/use-translation';
 
 interface User {
@@ -36,10 +36,12 @@ interface UsersPageProps {
         }>;
     };
     query: string;
+    sort_by?: string;
+    sort_order?: 'asc' | 'desc';
 }
 
 export default function Users() {
-    const { users, query } = usePage<UsersPageProps>().props;
+    const { users, query, sort_by, sort_order } = usePage<UsersPageProps>().props;
     const [searchQuery, setSearchQuery] = useState(query || '');
     const { t } = useTranslation();
 
@@ -50,7 +52,7 @@ export default function Users() {
         },
     ];
 
-    // Form for search
+    // Form for search and sorting
     const {
         get,
         processing: searchProcessing
@@ -58,9 +60,18 @@ export default function Users() {
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
-        const searchUrl = searchQuery.trim()
-            ? `/users?search=${encodeURIComponent(searchQuery.trim())}`
-            : '/users';
+        const params = new URLSearchParams();
+
+        if (searchQuery.trim()) {
+            params.append('search', searchQuery.trim());
+        }
+
+        if (sort_by) {
+            params.append('sort_by', sort_by);
+            params.append('sort_order', sort_order || 'asc');
+        }
+
+        const searchUrl = params.toString() ? `/users?${params.toString()}` : '/users';
 
         get(searchUrl, {
             preserveState: true,
@@ -68,12 +79,56 @@ export default function Users() {
         });
     };
 
-    const clearSearch = () => {
-        setSearchQuery('');
-        get('/users', {
+    const handleSort = () => {
+        const params = new URLSearchParams();
+
+        if (searchQuery.trim()) {
+            params.append('search', searchQuery.trim());
+        }
+
+        // Toggle sort order
+        const newSortOrder = sort_by === 'id' && sort_order === 'asc' ? 'desc' : 'asc';
+        params.append('sort_by', 'id');
+        params.append('sort_order', newSortOrder);
+
+        get(`/users?${params.toString()}`, {
             preserveState: true,
             preserveScroll: true,
         });
+    };
+
+    const clearSearch = () => {
+        setSearchQuery('');
+        const params = new URLSearchParams();
+
+        if (sort_by) {
+            params.append('sort_by', sort_by);
+            params.append('sort_order', sort_order || 'asc');
+        }
+
+        const url = params.toString() ? `/users?${params.toString()}` : '/users';
+
+        get(url, {
+            preserveState: true,
+            preserveScroll: true,
+        });
+    };
+
+    const buildPaginationUrl = (page: number) => {
+        const params = new URLSearchParams();
+
+        if (searchQuery.trim()) {
+            params.append('search', searchQuery.trim());
+        }
+
+        if (sort_by) {
+            params.append('sort_by', sort_by);
+            params.append('sort_order', sort_order || 'asc');
+        }
+
+        params.append('page', String(page));
+
+        return `/users?${params.toString()}`;
     };
 
     const formatDate = (dateString: string) => {
@@ -99,6 +154,13 @@ export default function Users() {
                 {user.email_verified_at ? t('users.status_verified') : t('users.status_unverified')}
             </Badge>
         );
+    };
+
+    const getSortIcon = () => {
+        if (sort_by !== 'id') {
+            return <ArrowUpDown className="h-4 w-4" />;
+        }
+        return sort_order === 'asc' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />;
     };
 
     return (
@@ -150,6 +212,17 @@ export default function Users() {
                                     </Button>
                                 )}
                             </form>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="default"
+                                onClick={handleSort}
+                                disabled={searchProcessing}
+                                className="whitespace-nowrap gap-2"
+                            >
+                                {getSortIcon()}
+                                Sort by ID
+                            </Button>
                         </div>
                         {query && (
                             <div className="mt-4 text-sm text-foreground/70">
@@ -251,69 +324,43 @@ export default function Users() {
                                 variant="outline"
                                 size="sm"
                                 disabled={users.current_page === 1 || searchProcessing}
-                                onClick={() => {
-                                    const url = searchQuery.trim()
-                                        ? `/users?search=${encodeURIComponent(searchQuery.trim())}&page=1`
-                                        : '/users?page=1';
-                                    get(url, { preserveState: true, preserveScroll: true });
-                                }}
+                                onClick={() => get(buildPaginationUrl(1), { preserveState: true, preserveScroll: true })}
                                 className="w-8 h-8 p-0"
                             >
                                 <ChevronsLeft className="w-4 h-4" />
                             </Button>
-
                             {/* Previous Page */}
                             <Button
                                 variant="outline"
                                 size="sm"
                                 disabled={users.current_page === 1 || searchProcessing}
-                                onClick={() => {
-                                    const prevPage = users.current_page - 1;
-                                    const url = searchQuery.trim()
-                                        ? `/users?search=${encodeURIComponent(searchQuery.trim())}&page=${prevPage}`
-                                        : `/users?page=${prevPage}`;
-                                    get(url, { preserveState: true, preserveScroll: true });
-                                }}
+                                onClick={() => get(buildPaginationUrl(users.current_page - 1), { preserveState: true, preserveScroll: true })}
                                 className="w-8 h-8 p-0"
                             >
                                 <ChevronLeft className="w-4 h-4" />
                             </Button>
-
                             {/* Current Page Info */}
                             <span className="text-sm text-foreground/70 px-2">
                                 {t('users.page_of')
                                     .replace('{current}', String(users.current_page))
                                     .replace('{last}', String(users.last_page))}
                             </span>
-
                             {/* Next Page */}
                             <Button
                                 variant="outline"
                                 size="sm"
                                 disabled={users.current_page === users.last_page || searchProcessing}
-                                onClick={() => {
-                                    const nextPage = users.current_page + 1;
-                                    const url = searchQuery.trim()
-                                        ? `/users?search=${encodeURIComponent(searchQuery.trim())}&page=${nextPage}`
-                                        : `/users?page=${nextPage}`;
-                                    get(url, { preserveState: true, preserveScroll: true });
-                                }}
+                                onClick={() => get(buildPaginationUrl(users.current_page + 1), { preserveState: true, preserveScroll: true })}
                                 className="w-8 h-8 p-0"
                             >
-                                <ChevronRight className="w-4 h-4" />
+                                <ChevronRight className="w-4 w-4" />
                             </Button>
-
                             {/* Last Page */}
                             <Button
                                 variant="outline"
                                 size="sm"
                                 disabled={users.current_page === users.last_page || searchProcessing}
-                                onClick={() => {
-                                    const url = searchQuery.trim()
-                                        ? `/users?search=${encodeURIComponent(searchQuery.trim())}&page=${users.last_page}`
-                                        : `/users?page=${users.last_page}`;
-                                    get(url, { preserveState: true, preserveScroll: true });
-                                }}
+                                onClick={() => get(buildPaginationUrl(users.last_page), { preserveState: true, preserveScroll: true })}
                                 className="w-8 h-8 p-0"
                             >
                                 <ChevronsRight className="w-4 h-4" />

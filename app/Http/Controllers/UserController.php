@@ -11,6 +11,7 @@ class UserController extends Controller
     public function index(Request $request)
     {
         $query = $request->get('search');
+        $sortOrder = $request->get('sort_order', 'desc');
 
         $users = User::where('id', '!=', auth()->id())
             ->when($query, function ($queryBuilder) use ($query) {
@@ -20,13 +21,15 @@ class UserController extends Controller
                       ->orWhere('phone_number', 'LIKE', '%' . $query . '%');
                 });
             })
-            ->orderBy('id', 'desc')
+            ->orderBy('id', $sortOrder)
             ->paginate(25)
             ->withQueryString(); // Preserve search parameters in pagination links
 
         return Inertia::render('users', [
             'users' => $users,
             'query' => $query,
+            'sort_by'=> 'id',
+            'sort_order' => $sortOrder
         ]);
     }
 

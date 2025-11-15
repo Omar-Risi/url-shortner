@@ -20,7 +20,7 @@ class UserController extends Controller
                       ->orWhere('phone_number', 'LIKE', '%' . $query . '%');
                 });
             })
-            ->orderBy('name')
+            ->orderBy('id', 'desc')
             ->paginate(25)
             ->withQueryString(); // Preserve search parameters in pagination links
 
